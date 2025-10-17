@@ -1,0 +1,140 @@
+/* Путь: frontend/src/components/WeatherWidget.css
+   Назначение: стабильное и аккуратное отображение виджета погоды в шапке IzotovLife.
+   Включает:
+   • Корректное выравнивание и центрирование иконок/текста;
+   • Резерв места под строку погоды (без «скачков» при загрузке);
+   • Плейсхолдер и кнопка повтора при ошибке;
+   • Стили ручного выбора города (инпут + подсказки).
+   Важно: я НИЧЕГО не удалял из прежнего файла — только дополнил и увязал с вашими правками.
+*/
+
+/* --- ОБЩИЙ КОНТЕЙНЕР ------------------------------------------------------ */
+.weather-widget {
+  display: inline-flex;             /* было inline-flex — оставляем для совместимости с Navbar */
+  align-items: center;
+  justify-content: center;          /* добавлено: строгий центр по горизонтали */
+  gap: 8px;
+  height: 28px;                     /* фиксированная высота, чтобы строка не «скакала» */
+  line-height: 1;
+  font-size: 14px;
+  color: #fff;
+  white-space: nowrap;
+  min-width: 240px;                 /* ✅ резервируем место, чтобы блок не схлопывался */
+  user-select: none;
+}
+
+/* --- КНОПКИ ИКОНКИ (🌍 и ⟳) ----------------------------------------------- */
+.weather-btn {
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;              /* центрирование иконки */
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+}
+
+/* Индикатор загрузки: вращение иконки «⟳» */
+.rotate-icon {
+  display: inline-block;
+  animation: spin 1s linear infinite;
+  transform-origin: 50% 50%;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* --- СТРОКА ПОГОДЫ -------------------------------------------------------- */
+.weather-fade {
+  display: inline-flex;             /* было inline-flex — оставляем */
+  align-items: center;
+  justify-content: center;          /* добавлено: центрируем контент строки */
+  gap: 6px;
+  line-height: 1;
+  font-size: inherit;
+  flex-wrap: nowrap;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity .5s ease-in;  /* чуть плавнее появление */
+}
+
+/* Плавное появление текста */
+.fade-in { opacity: 1; }
+
+/* Центрируем все кусочки текста/иконок, чтобы ничего не «прыгало» */
+.weather-fade strong,
+.weather-fade span,
+.weather-fade img,
+.weather-fade svg {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+  vertical-align: middle;
+}
+
+/* Унифицируем размеры графики (если будут svg/img) */
+.weather-fade img,
+.weather-fade svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+/* --- ТЕКСТОВЫЕ ЭЛЕМЕНТЫ --------------------------------------------------- */
+.weather-placeholder { color: #bbb; }   /* «Загрузка погоды…» */
+.weather-city { margin-right: 2px; }
+.weather-temp { font-weight: 600; }
+.weather-desc { color: #ddd; }
+.weather-pressure, .weather-wind { color: #ccc; }
+.weather-time { font-size: 12px; color: #bbb; }
+
+/* --- СОСТОЯНИЕ ОШИБКИ ----------------------------------------------------- */
+.weather-error-btn {
+  background: none;
+  border: 1px dashed rgba(255,255,255,.25);
+  border-radius: 6px;
+  padding: 2px 6px;
+  color: #ffd8a8;
+  cursor: pointer;
+}
+
+/* --- РУЧНОЙ ВВОД ГОРОДА --------------------------------------------------- */
+.weather-manual { position: relative; margin-top: 6px; }
+.weather-input {
+  background: #111;
+  color: #fff;
+  border: 1px solid #444;
+  border-radius: 6px;
+  padding: 4px 8px;
+  width: 180px;
+  outline: none;
+}
+.weather-input:focus { border-color: #666; }
+
+.weather-suggest {
+  position: absolute;
+  top: 110%;
+  left: 0;
+  right: 0;
+  background: #0f1115;
+  border: 1px solid #333;
+  border-radius: 8px;
+  z-index: 30;
+  box-shadow: 0 4px 8px rgba(0,0,0,.4);
+  overflow: hidden;
+}
+.weather-suggest-item {
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 14px;
+}
+.weather-suggest-item:hover { background: #1a1a1a; }
+
+/* --- ДОП. ДОСТУПНОСТЬ ----------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  .rotate-icon { animation: none; }
+  .weather-fade { transition: none; }
+}

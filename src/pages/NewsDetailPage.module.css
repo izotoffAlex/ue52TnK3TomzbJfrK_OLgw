@@ -1,0 +1,302 @@
+/* Путь: frontend/src/pages/NewsDetailPage.module.css
+   Назначение: Детальная страница новости IzotovLife.
+   Финальная версия:
+   ✅ Центральная обложка новости на всю ширину
+   ✅ Отступы между заголовком, датой и изображением
+   ✅ Увеличенные вертикальные отступы между текстом и медиа
+   ✅ Hover-эффекты для всех изображений и SmartMedia
+   ✅ Сохранены адаптивность и боковые колонки
+*/
+
+.pageWrap {
+  max-width: 1360px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 280px minmax(720px, 1fr) 280px;
+  gap: 20px;
+  justify-content: center;
+  align-items: start;
+  padding: 20px;
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 80px;
+}
+
+/* Все три колонки — flex-контейнеры */
+.pageWrap > * {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Левая колонка */
+.leftAside {
+  background: var(--bg-card, #0f1115);
+  border: 1px solid var(--border, rgba(255,255,255,0.1));
+  border-radius: 14px;
+  padding: 14px;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.sectionH {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: var(--fg, #fff);
+}
+
+.latestList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.latestItem {
+  font-size: 15px;
+  color: var(--fg, #fff);
+  text-decoration: none;
+  border-bottom: 1px solid var(--border, rgba(255,255,255,0.1));
+  padding-bottom: 6px;
+  transition: color 0.2s ease;
+}
+
+.latestItem:hover {
+  color: var(--accent, #3ea6ff);
+}
+
+/* Центральная колонка */
+.main {
+  background: var(--bg-card, #0f1115);
+  border: 1px solid var(--border, rgba(255,255,255,0.1));
+  border-radius: 14px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.title {
+  font-size: 23px;
+  line-height: 1.3;
+  font-weight: 700;
+  margin-bottom: 12px; /* отступ до даты */
+  color: var(--fg, #fff);
+}
+
+/* Метаданные новости (дата и источник) */
+.meta {
+  font-size: 14px;
+  color: var(--muted, rgba(255,255,255,0.7));
+  margin-bottom: 24px; /* от даты до изображения */
+}
+
+/* Основная обложка новости — растягивается на всю ширину центральной колонки */
+.cover {
+  width: 100%;
+  height: auto;
+  border-radius: 10px;
+  object-fit: cover;
+  margin-bottom: 24px; /* от изображения до текста */
+  display: block;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.cover:hover {
+  transform: scale(1.02);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+}
+
+/* Контент новости */
+.body {
+  font-size: 17px;
+  line-height: 1.6;
+  color: var(--fg, #ddd);
+  margin-bottom: 12px;
+  flex-grow: 1;
+}
+
+/* Изображения и видео внутри текста */
+.body img,
+.body video {
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  margin: 24px 0; /* увеличено для лучшего разделения с текстом */
+  border-radius: 10px;
+  object-fit: cover;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.body img:hover,
+.body video:hover {
+  transform: scale(1.03);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* SmartMedia — внутри текста или новости */
+.main :global(.smartMedia),
+.main :global(.smartMedia img),
+.main :global(.smartMedia video) {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  border-radius: 10px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.main :global(.smartMedia):hover,
+.main :global(.smartMedia img):hover,
+.main :global(.smartMedia video):hover {
+  transform: scale(1.02);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+}
+
+/* Ссылка "Читать в источнике" */
+.external {
+  margin-top: auto;
+}
+
+.externalLink {
+  color: var(--accent, #f9c85c);
+  text-decoration: none;
+  font-size: 15px;
+}
+
+.externalLink:hover {
+  text-decoration: underline;
+}
+
+/* Правая колонка */
+.rightAside {
+  background: var(--bg-card, #0f1115);
+  border: 1px solid var(--border, rgba(255,255,255,0.1));
+  border-radius: 14px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.relList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.relItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  text-decoration: none;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  padding: 8px;
+  transition: background 0.2s ease;
+}
+
+.relItem:hover {
+  background: color-mix(in srgb, var(--bg-card) 90%, black 10%);
+}
+
+.relThumb {
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  object-fit: cover;
+  background: #0a0f1a;
+}
+
+.relTitle {
+  font-size: 14px;
+  color: var(--fg, #fff);
+  line-height: 1.35;
+  margin-bottom: 3px;
+}
+
+.relSource {
+  font-size: 12px;
+  color: var(--muted, rgba(255,255,255,0.7));
+}
+
+/* Адаптив: на мобильном показываем только центральную колонку */
+@media (max-width: 960px) {
+  .pageWrap {
+    grid-template-columns: 1fr;
+    max-width: 760px;
+    margin-bottom: 60px;
+  }
+
+  .leftAside,
+  .rightAside {
+    display: none;
+  }
+}
+/* ================== Хлебные крошки ================== */
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* расстояние между пунктами */
+  font-size: 14px;
+  color: #5a6b84;
+  margin-bottom: 12px;
+}
+
+.breadcrumbs a {
+  color: #1a73e8;
+  text-decoration: none;
+}
+
+.breadcrumbs a:hover {
+  text-decoration: underline;
+}
+
+.breadcrumbSeparator {
+  margin: 0 4px;
+  color: #999;
+}
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* расстояние между пунктами */
+  font-size: 14px;
+  color: #5a6b84;
+  margin-bottom: 12px;
+}
+
+.breadcrumbs a {
+  color: #1a73e8;
+  text-decoration: none;
+}
+
+.breadcrumbs a:hover {
+  text-decoration: underline;
+}
+
+.breadcrumbSeparator {
+  margin: 0 4px;
+  color: #999;
+}
+.breadcrumbs {
+  font-size: 14px;
+  margin: 8px 0 16px 0; /* отступ сверху и снизу */
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px; /* расстояние между элементами */
+  color: #555;
+}
+
+.breadcrumbs a {
+  text-decoration: none;
+  color: #0077cc;
+}
+
+.breadcrumbs a:hover {
+  text-decoration: underline;
+}
+
+.breadcrumbSeparator {
+  margin: 0 4px;
+  color: #999;
+}

@@ -1,0 +1,229 @@
+/* Путь: frontend/src/components/NewsCard.module.css
+   Назначение: Стили карточки новости в ленте.
+   Обновление:
+     • Адаптация под светлые/жёлтые темы.
+     • Цвет источника теперь берёт системные переменные.
+     • Плавный hover без искажения контраста.
+*/
+
+:root {
+  --bg-card: #0f1115;
+  --text: #e8eaee;
+  --muted: #9aa4b2;
+  --border: rgba(255, 255, 255, 0.06);
+  --accent: #f9c85c;
+}
+
+/* --- Светлые темы --- */
+body.theme-light,
+.theme-light {
+  --bg-card: #ffffff;
+  --text: #111111;
+  --muted: #555555;
+  --border: rgba(0, 0, 0, 0.1);
+  --accent: #1a4b9a;
+}
+
+body.theme-yellow,
+.theme-yellow {
+  --bg-card: #fff9e5;
+  --text: #111111;
+  --muted: #3a372e;
+  --border: rgba(0, 0, 0, 0.15);
+  --accent: #d68b00;
+}
+
+/* --- Карточка --- */
+.card {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease, background 0.3s ease, color 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--border) 60%, var(--accent) 40%);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.35);
+}
+
+/* --- Обёртка изображения --- */
+.mediaWrap {
+  position: relative; /* для позиционирования бэйджа источника */
+  display: block;
+  aspect-ratio: 16 / 9;
+  background: #0b0d11;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.media {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  will-change: filter;
+  background-color: #0b0d11;
+}
+
+/* --- Тело карточки --- */
+.body {
+  padding: 12px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* --- Заголовок --- */
+.title {
+  font-size: 16px;
+  line-height: 1.25;
+  margin: 0;
+}
+
+.title a {
+  color: var(--text);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.title a:hover {
+  text-decoration: underline;
+  color: var(--accent);
+}
+
+/* --- Источник --- */
+.sourceLine {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  opacity: 0.9;
+  font-size: 12px;
+  color: var(--muted);
+  transition: color 0.3s ease, opacity 0.3s ease;
+}
+
+.sourceDot {
+  width: 6px;
+  height: 6px;
+  background: var(--muted);
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.sourceText {
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* --- Метаданные (категория, дата) --- */
+.meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.cat {
+  padding: 4px 8px;
+  background: rgba(154, 164, 178, 0.12);
+  border: 1px solid rgba(154, 164, 178, 0.18);
+  border-radius: 999px;
+  color: var(--text);
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.card:hover .cat {
+  background: rgba(249, 200, 92, 0.15);
+  color: var(--accent);
+}
+
+.date {
+  opacity: 0.9;
+}
+
+/* ===================== ДОБАВЛЕНО ДЛЯ ПРОИЗВОДИТЕЛЬНОСТИ ===================== */
+@supports (content-visibility: auto) {
+  .card {
+    content-visibility: auto;
+    contain-intrinsic-size: 322px;
+  }
+}
+
+/* ===================== ПРЕДПОЧТЕНИЯ REDUCED MOTION ===================== */
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition: border-color 0.12s ease, box-shadow 0.12s ease;
+  }
+  .card:hover {
+    transform: none;
+  }
+}
+
+/* ===================== ДОСТУПНОСТЬ ===================== */
+.card :where(a:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 10px;
+}
+
+/* ===================== АДАПТИВ ===================== */
+@media (max-width: 360px) {
+  .title { font-size: 15px; }
+}
+
+/* ===================== ХОВЕР-СТАНЫ ДЛЯ СВЕТЛЫХ ТЕМ ===================== */
+body.theme-yellow .card:hover,
+.theme-yellow .card:hover {
+  border-color: rgba(0, 0, 0, 0.25);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+  background: color-mix(in srgb, var(--bg-card) 92%, black 8%);
+}
+
+body.theme-white .card:hover,
+.theme-white .card:hover {
+  border-color: rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+  background: color-mix(in srgb, var(--bg-card) 95%, black 5%);
+}
+
+/* ===================== ГЛАДКИЙ ПЕРЕХОД ПРИ СМЕНЕ ТЕМ ===================== */
+.card,
+.body,
+.title a,
+.sourceLine,
+.meta,
+.cat {
+  transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+/* --- Эффект появления и мягкий градиент под текстом --- */
+.card {
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.card.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* затемнение нижней части изображения для читаемости текста */
+.mediaWrap::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 45%;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.55), transparent);
+  pointer-events: none;
+}

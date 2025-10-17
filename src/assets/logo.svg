@@ -1,0 +1,14 @@
+<!-- frontend/src/assets/logo.svg
+     Назначение: Логотип. Замените на ваш файл (тот, что приложён).
+     Путь: frontend/src/assets/logo.svg -->
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="48" viewBox="0 0 256 48">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#d4af37"/>
+      <stop offset="100%" stop-color="#ffcf6f"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="256" height="48" rx="12" fill="#0b132b"/>
+  <circle cx="24" cy="24" r="12" fill="url(#g)"/>
+  <text x="48" y="30" font-family="Segoe UI, Arial" font-size="20" fill="url(#g)">IzotovLife</text>
+</svg>

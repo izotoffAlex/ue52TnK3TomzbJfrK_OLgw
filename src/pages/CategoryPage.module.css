@@ -1,0 +1,290 @@
+/* Путь: frontend/src/pages/CategoryPage.module.css
+   Назначение: стили страницы категории и индекса категорий.
+   Дополнения:
+   ✅ Оверлей названия на карточках в индексе категорий (.cardOverlay / .cardName)
+   ✅ Совместимо с ранней версией (ничего не удалено — только добавлено/унифицировано)
+*/
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 16px;
+  box-sizing: border-box;
+}
+
+.breadcrumbs {
+  font-size: 0.95rem;
+  color: var(--muted, #888);
+  margin-bottom: 16px;
+}
+
+.breadcrumbs a {
+  color: var(--muted, #888);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.breadcrumbs a:hover {
+  color: var(--link-hover, #1a73e8);
+}
+
+.title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 24px;
+  color: var(--fg, #222);
+}
+
+/* ===== Сетка индекса категорий ===== */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+.card {
+  position: relative;
+  background: var(--bg-card, #fff);
+  border-radius: 12px;
+  border: 1px solid var(--border, rgba(0, 0, 0, 0.08));
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  text-decoration: none;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+  border-color: color-mix(in srgb, var(--border, rgba(0,0,0,0.08)) 70%, #1a73e8 30%);
+}
+
+.cardImage {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  display: block;
+  background: #0a0f1a;
+}
+
+/* ✅ Оверлей названия категории на карточке */
+.cardOverlay {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 10px 12px;
+  background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.65) 100%);
+}
+
+.cardName {
+  color: #fff;
+  font-weight: 700;
+  font-size: 1rem;
+  text-shadow: 0 0 6px rgba(0,0,0,0.65);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ===== Список новостей категории ===== */
+.newsList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.newsList li {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border, rgba(0, 0, 0, 0.08));
+}
+
+.newsList li:last-child {
+  border-bottom: none;
+}
+
+.newsList a {
+  color: var(--fg, #333);
+  text-decoration: none;
+  line-height: 1.35;
+}
+
+.newsList a:hover {
+  color: var(--link-hover, #1a73e8);
+  text-decoration: underline;
+}
+
+/* Пагинация */
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.pagination button {
+  appearance: none;
+  border: 1px solid var(--border, rgba(0, 0, 0, 0.15));
+  background: var(--bg-card, #fff);
+  color: var(--fg, #333);
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.pagination button:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--bg-card) 92%, #1a73e8 8%);
+  border-color: color-mix(in srgb, var(--border, #ccc) 70%, #1a73e8 30%);
+}
+
+.pagination button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* Пустое состояние */
+.empty {
+  text-align: center;
+  color: var(--muted, #777);
+  font-size: 1rem;
+  margin-top: 60px;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .title {
+    font-size: 1.5rem;
+  }
+  .grid { gap: 16px; }
+  .cardImage { height: 160px; }
+}
+/* Путь: frontend/src/pages/CategoryPage.module.css
+   Назначение: стили страницы категории с карточками (слева) и текстовым блоком (справа),
+   в том же духе, что и главная лента. Ничего не удаляем — только расширяем.
+*/
+
+/* ====== Обертка страницы и заголовки ====== */
+.page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+
+.breadcrumbs {
+  font-size: 0.95rem;
+  color: #888;
+  margin-bottom: 16px;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.breadcrumbs a {
+  color: #888;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.breadcrumbs a:hover {
+  color: #5aaaff;
+  text-decoration: underline;
+}
+
+.title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 24px;
+  color: var(--fg, #fff);
+}
+
+/* ====== Сетка карточек как на главной ====== */
+.news-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+/* ====== Плейсхолдер пустого текста ====== */
+.empty {
+  text-align: left;
+  color: #999;
+  font-size: 0.95rem;
+  margin: 8px 0 0 0;
+}
+
+/* ====== Адаптив ====== */
+@media (max-width: 768px) {
+  .title {
+    font-size: 1.5rem;
+  }
+  .news-grid {
+    gap: 12px;
+  }
+}
+/* Путь: frontend/src/pages/CategoryPage.module.css
+   Назначение: стили страницы категории в формате главной.
+   Обновлено:
+   ✅ Добавлен .news-grid (как на главной)
+   ✅ Сохранены хлебные крошки, заголовки, адаптив
+*/
+
+.page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+
+.breadcrumbs {
+  font-size: 0.95rem;
+  color: #888;
+  margin-bottom: 16px;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.breadcrumbs a {
+  color: #888;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.breadcrumbs a:hover {
+  color: #5aaaff;
+  text-decoration: underline;
+}
+
+.title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 24px;
+  color: var(--fg, #fff);
+}
+
+/* Сетка карточек — как на главной */
+.news-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.empty {
+  text-align: left;
+  color: #999;
+  font-size: 0.95rem;
+  margin: 8px 0 0 0;
+}
+
+@media (max-width: 768px) {
+  .title {
+    font-size: 1.5rem;
+  }
+  .news-grid {
+    gap: 12px;
+  }
+}

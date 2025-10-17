@@ -1,0 +1,84 @@
+/* frontend/src/index.css
+   Назначение: Tailwind + глобальные стили + скелетоны + кастомный лоадер + версии для слабовидящих
+   Путь: frontend/src/index.css */
+
+/* Сначала Tailwind */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Дальше — твои кастомные переменные и стили */
+:root {
+  --brand-bg: #0b132b;          /* графитово-синий фон */
+  --brand-fg: #f5f7ff;          /* светлый текст */
+  --brand-accent: #d4af37;      /* золото */
+  --brand-accent-2: #ffcf6f;    /* светлее золота для градиента */
+  --card-bg: #111827;
+  --border: #1f2937;
+}
+
+* { box-sizing: border-box }
+html, body, #root { height: 100% }
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans','Helvetica Neue', Arial;
+  background: var(--brand-bg);
+  color: var(--brand-fg);
+}
+
+a { color: var(--brand-accent); text-decoration: none; }
+a:hover { opacity: .85 }
+
+/* --- Базовое меню --- */
+.sidebar-menu {
+  background: #111;
+  color: white;
+}
+.sidebar-menu a {
+  color: white;
+}
+
+/* --- Стили для слабовидящих --- */
+
+/* Жёлтый на чёрном */
+body.low-vision-yellow {
+  background: #000 !important;
+  color: #ff0 !important;
+}
+body.low-vision-yellow a {
+  color: #ff0 !important;
+  text-decoration: underline !important;
+}
+body.low-vision-yellow .navbar,
+body.low-vision-yellow .sidebar-menu {
+  background: #000 !important;
+  color: #ff0 !important;
+}
+body.low-vision-yellow .sidebar-menu a {
+  color: #ff0 !important;
+}
+
+/* Белый на чёрном */
+body.low-vision-white {
+  background: #000 !important;
+  color: #fff !important;
+}
+body.low-vision-white a {
+  color: #fff !important;
+  text-decoration: underline !important;
+}
+body.low-vision-white .navbar,
+body.low-vision-white .sidebar-menu {
+  background: #000 !important;
+  color: #fff !important;
+}
+body.low-vision-white .sidebar-menu a {
+  color: #fff !important;
+}
+
+/* Цвет крестика в меню */
+.close-btn {
+  color: white;
+}
+body.low-vision-yellow .close-btn { color: #ff0 !important; }
+body.low-vision-white .close-btn { color: #fff !important; }

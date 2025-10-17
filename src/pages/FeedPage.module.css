@@ -1,0 +1,136 @@
+/* Путь: frontend/src/pages/FeedPage.module.css
+   Назначение: карточки главной ленты IzotovLife (в стиле Дзена)
+   Исправлено:
+   ✅ Добавлен источник на карточках (верхний левый угол)
+   ✅ Текст читаем на любых фонах
+   ✅ Градиент и тень оптимизированы
+*/
+
+:root {
+  --bg: #0b0c0f;
+  --fg: #ffffff;
+  --accent: rgb(249, 200, 92);
+}
+
+/* Светлая тема */
+:global(body.theme-light) .feed-page,
+:global(.theme-light) .feed-page {
+  --bg: #fdfdfd;
+  --fg: #111;
+  --accent: #1a4b9a;
+}
+
+/* Жёлтая тема */
+:global(body.theme-yellow) .feed-page,
+:global(.theme-yellow) .feed-page {
+  --bg: #fff9e6;
+  --fg: #111;
+  --accent: #c38b00;
+}
+
+.feed-page {
+  background: var(--bg);
+  color: var(--fg);
+  padding: 1rem;
+}
+
+/* Сетка карточек */
+.news-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1.2rem;
+}
+
+/* Карточка */
+.news-card {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #000;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.news-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+}
+
+/* Фото */
+.news-image {
+  width: 100%;
+  height: 240px;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.4s ease;
+}
+
+.news-card:hover .news-image {
+  transform: scale(1.05);
+}
+
+/* Градиент снизу */
+.news-gradient {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 75%;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.95) 0%,
+    rgba(0, 0, 0, 0.7) 40%,
+    rgba(0, 0, 0, 0.3) 70%,
+    transparent 100%
+  );
+}
+
+/* Контент (заголовок + ссылка) */
+.news-content {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 1.1rem;
+  color: var(--fg);
+  z-index: 2;
+}
+
+/* Заголовок */
+.news-title {
+  font-weight: 600;
+  font-size: 1.1rem;
+  line-height: 1.35;
+  margin-bottom: 0.4rem;
+  color: #fff;
+  text-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.9),
+    0 0 4px rgba(0, 0, 0, 0.6),
+    0 0 1px rgba(0, 0, 0, 0.8);
+}
+
+/* "Читать далее" */
+.news-link {
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.news-link:hover {
+  text-decoration: underline;
+}
+
+/* Источник (верхний левый угол) */
+.news-source {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: rgba(0, 0, 0, 0.6);
+  color: var(--accent);
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 0.4rem 0.6rem;
+  border-bottom-right-radius: 8px;
+  z-index: 3;
+  backdrop-filter: blur(2px);
+}
