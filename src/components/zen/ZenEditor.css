@@ -1,0 +1,43 @@
+/* Путь: frontend/src/components/zen/ZenEditor.css
+   Назначение: Контент слева, без внутренних рамок/скроллов. Плейсхолдер — ТОЛЬКО у первого блока.
+   Плюс предохранитель — скрыть любые вторые/третьи EditorJS на странице.
+*/
+
+:root { --zen-editor-padding-x: 16px; }
+
+.zen-editor-root { position: relative; width: 100%; pointer-events: auto; }
+
+.zen-editor-holder {
+  min-height: 60vh;
+  padding: 0 var(--zen-editor-padding-x);
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  cursor: text;
+}
+
+/* ширина/выравнивание EditorJS */
+.zen-editor-root .codex-editor,
+.zen-editor-root .codex-editor__redactor,
+.zen-editor-root .ce-block,
+.zen-editor-root .ce-block__content,
+.zen-editor-root .ce-toolbar__content { max-width: none !important; }
+.zen-editor-root .ce-block__content,
+.zen-editor-root .ce-toolbar__content { margin: 0 !important; padding: 0 !important; }
+.zen-editor-root .ce-paragraph,
+.zen-editor-root .cdx-block { text-align: left !important; }
+
+/* Плейсхолдер показываем только у ПЕРВОГО абзаца
+   (используем селектор «все последующие» через тильду) */
+.zen-editor-root .codex-editor [contenteditable][data-placeholder]::before { opacity: .6; }
+/* второй и далее абзацы */
+.zen-editor-root .codex-editor .ce-block ~ .ce-block [contenteditable][data-placeholder]::before {
+  content: "" !important;
+  opacity: 0 !important;
+}
+
+/* прокрутка у страницы */
+.zen-editor-root .codex-editor__redactor { overflow: visible !important; }
+
+/* предохранитель: если по ошибке оказалось несколько EditorJS — показываем только первый */
+.new-article .codex-editor:not(:first-of-type) { display: none !important; }

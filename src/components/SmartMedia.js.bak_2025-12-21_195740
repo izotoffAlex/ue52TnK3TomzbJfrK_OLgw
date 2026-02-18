@@ -1,0 +1,102 @@
+/* Путь: frontend/src/components/SmartMedia.js
+   Назначение: Умный вывод медиа (картинка/аудио) без "битых иконок".
+   FIX v2025-12-21:
+     ✅ Хуки всегда вызываются в одном порядке (ESLint react-hooks OK)
+     ✅ <img> НЕ показываем пока не загрузилось (нет "битой иконки")
+     ✅ primary = прямая ссылка (обычно работает лучше и быстрее)
+     ✅ fallback = ресайзер /api/media/thumbnail/ (если прямая не загрузилась)
+     ✅ Если оба варианта упали — ничего не рендерим (return null)
+*/
+
+import React, { useEffect, useMemo, useState } from "react";
+import { buildThumbnailUrl, isAudioUrl } from "../Api";
+import s from "./SmartMedia.module.css";
+
+function toNonEmptyString(v) {
+  const x = String(v || "").trim();
+  return x ? x : "";
+}
+
+export default function SmartMedia({
+  src,
+  alt = "",
+  className = "",
+  thumb = { w: 760, h: 430, q: 78, fmt: "webp", fit: "cover" },
+  sizes,
+  loading = "lazy",
+  decoding = "async",
+  ...rest
+}) {
+  // 1) всегда считаем rawSrc одинаково
+  const rawSrc = useMemo(() => toNonEmptyString(src), [src]);
+
+  // 2) всегда считаем признак аудио одинаково
+  const audio = useMemo(() => {
+    return rawSrc ? isAudioUrl(rawSrc) : false;
+  }, [rawSrc]);
+
+  // 3) всегда считаем fallback-URL через ресайзер одинаково
+  const viaResizer = useMemo(() => {
+    if (!rawSrc) return "";
+    return buildThumbnailUrl(rawSrc, thumb) || "";
+  }, [rawSrc, thumb?.w, thumb?.h, thumb?.q, thumb?.fmt, thumb?.fit]);
+
+  // primary = прямая ссылка, fallback = ресайзер (если отличается)
+  const primary = rawSrc;
+  const fallback = viaResizer && viaResizer !== rawSrc ? viaResizer : "";
+
+  // mode/current/visible — хуки не условные
+  const [mode, setMode] = useState("primary"); // primary | fallback | dead
+  const [current, setCurrent] = useState(primary);
+  const [visible, setVisible] = useState(false); // показываем img только после onLoad
+
+  // сброс при смене src
+  useEffect(() => {
+    setMode("primary");
+    setCurrent(primary);
+    setVisible(false);
+  }, [primary]);
+
+  // --- рендер ---
+
+  if (!rawSrc) return null;
+
+  // аудио — отдельный путь
+  if (audio) {
+    return (
+      <audio className={`${s.audio} ${className}`} controls preload="none" {...rest}>
+        <source src={rawSrc} />
+      </audio>
+    );
+  }
+
+  if (mode === "dead") return null;
+  if (!toNonEmptyString(current)) return null;
+
+  return (
+    <img
+      src={current}
+      alt={alt}
+      className={`${s.img} ${className}`}
+      loading={loading}
+      decoding={decoding}
+      sizes={sizes}
+      // ключевой трюк: не показываем img пока не загрузилось
+      style={{ opacity: visible ? 1 : 0 }}
+      onLoad={() => setVisible(true)}
+      onError={() => {
+        // прямая упала -> пробуем ресайзер
+        if (mode === "primary" && toNonEmptyString(fallback)) {
+          setMode("fallback");
+          setCurrent(fallback);
+          setVisible(false);
+          return;
+        }
+        // всё упало -> ничего не показываем
+        setMode("dead");
+        setVisible(false);
+      }}
+      {...rest}
+    />
+  );
+}

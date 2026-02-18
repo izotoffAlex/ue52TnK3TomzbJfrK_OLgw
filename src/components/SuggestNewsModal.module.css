@@ -1,170 +1,313 @@
-/* SuggestNewsModal.module.css */
+/* Путь: frontend/src/components/SuggestNewsModal.module.css
+   Назначение: Стили модального окна "Предложить новость".
+   FIX (2026-01-05):
+   ✅ В светлой теме текст/иконки/сообщения (success/error) теперь читаемы.
+   ✅ Добавлен стиль .note (примечание).
+   ✅ Ничего лишнего не удалено — только добавлены/уточнены стили под theme-white.
+*/
+
 .backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(10, 10, 10, 0.6);
-  backdrop-filter: blur(3px);
+  background: rgba(10, 10, 12, 0.62);
+  backdrop-filter: blur(2px);
+  z-index: 2147483600;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  z-index: 2000;
-  animation: fadeIn 0.25s ease-out;
+  padding: 18px 12px;
+  overflow-y: auto;
 }
 
 .modal {
-  background: #1c1c1c;
-  color: #fff;
-  width: 90%;
-  max-width: 550px;
-  max-height: 90vh; /* ограничиваем высоту модалки */
+  width: min(820px, 100%);
+  margin-top: 8px;
   border-radius: 14px;
+  background: #0f1115;
+  color: #e9eef6;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.65);
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
 }
 
 .header {
-  padding: 16px 20px;
-  font-size: 18px;
-  font-weight: 600;
-  background: #222;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  flex-shrink: 0;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 700;
 }
 
 .close {
-  background: none;
-  border: none;
-  color: #aaa;
-  font-size: 22px;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: inherit;
   cursor: pointer;
-  transition: color 0.2s;
+  line-height: 1;
+  font-size: 22px;
 }
+
 .close:hover {
-  color: #fff;
+  background: rgba(255, 255, 255, 0.10);
 }
 
 .form {
-  flex: 1;
-  overflow-y: auto; /* прокрутка формы */
-  padding: 16px 20px 100px; /* нижний отступ под кнопки */
+  padding: 14px 16px 16px;
+  max-height: calc(92vh - 70px);
+  overflow: auto;
 }
 
 .row {
-  margin-bottom: 16px;
   display: flex;
   flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
 }
 
 .label {
   font-size: 14px;
-  color: #ccc;
-  margin-bottom: 6px;
+  font-weight: 600;
+  opacity: 0.95;
 }
 
 .input,
 .textarea {
-  background: #2a2a2a;
-  color: #fff;
-  border: 1px solid #333;
-  border-radius: 6px;
-  padding: 10px;
-  font-size: 15px;
   width: 100%;
-  resize: vertical;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  color: inherit;
+  padding: 10px 12px;
+  outline: none;
+  font-size: 15px;
+}
+
+.input::placeholder,
+.textarea::placeholder {
+  color: rgba(233, 238, 246, 0.55);
 }
 
 .input:focus,
 .textarea:focus {
-  border-color: #4d90fe;
-  outline: none;
+  border-color: rgba(62, 166, 255, 0.65);
+  box-shadow: 0 0 0 2px rgba(62, 166, 255, 0.22);
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.row small {
+  font-size: 12px;
+  opacity: 0.7;
+  margin-top: 2px;
+}
+
+.row input[type="file"] {
+  display: block;
+  width: 100%;
+  font-size: 13px;
+  padding: 8px 0;
+  color: inherit;
+}
+
+/* Ошибки */
+.error {
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(255, 70, 70, 0.10);
+  border: 1px solid rgba(255, 70, 70, 0.30);
+  color: #ffd3d3;
 }
 
 .fieldError {
-  color: #ff6961;
-  font-size: 13px;
-  margin-top: 4px;
+  font-size: 12px;
+  color: #ffb3b3;
 }
 
-.honeypot {
-  display: none;
+/* Успех */
+.success {
+  padding: 18px 16px;
+  font-size: 15px;
+  line-height: 1.45;
+  color: #d7ffe1;
+  background: rgba(50, 200, 120, 0.10);
+  border-top: 1px solid rgba(50, 200, 120, 0.18);
 }
 
+/* Кнопки */
 .actions {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: #1c1c1c;
-  border-top: 1px solid #333;
   display: flex;
-  justify-content: space-between;
-  padding: 12px 20px;
-  flex-shrink: 0;
+  gap: 10px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.submit,
+.secondary {
+  border: 0;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-weight: 700;
+  cursor: pointer;
 }
 
 .submit {
-  background: #4d90fe;
-  color: #fff;
-  font-weight: 600;
-  border: none;
-  padding: 10px 18px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: background 0.2s;
+  background: rgba(62, 166, 255, 0.95);
+  color: #081018;
 }
-.submit:hover {
-  background: #357ae8;
+
+.submit:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 .secondary {
-  background: transparent;
-  color: #aaa;
-  border: 1px solid #444;
-  border-radius: 8px;
-  padding: 10px 18px;
-  cursor: pointer;
-  transition: background 0.2s, color 0.2s;
+  background: rgba(255, 255, 255, 0.08);
+  color: inherit;
+  border: 1px solid rgba(255, 255, 255, 0.12);
 }
+
 .secondary:hover {
-  background: #333;
-  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
 }
 
-.success {
-  padding: 40px 20px;
-  text-align: center;
-  font-size: 16px;
-  color: #90ee90;
+/* Honeypot — реально скрываем, чтобы не ломал верстку */
+.honeypot {
+  position: absolute;
+  left: -99999px;
+  top: -99999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
 }
 
+/* Мета */
+.meta {
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+/* Примечание / лайфхак */
+.note {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.45;
+  opacity: 0.95;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* Анимации */
 .fadeIn {
-  animation: fadeIn 0.25s ease-in;
+  animation: fadeIn 0.20s ease forwards;
 }
+
 .fadeOut {
-  animation: fadeOut 0.25s ease-out;
+  animation: fadeOut 0.20s ease forwards;
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
+
 @keyframes fadeOut {
-  from {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  to {
-    opacity: 0;
-    transform: translateY(10px);
-  }
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-4px); }
+}
+
+/* =========================
+   Светлая тема (theme-white)
+   ========================= */
+
+:global(body.theme-white) .backdrop {
+  background: rgba(240, 242, 245, 0.70);
+}
+
+:global(body.theme-white) .modal {
+  background: #ffffff;
+  color: #0b0f14;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+}
+
+:global(body.theme-white) .header {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.10);
+}
+
+:global(body.theme-white) .close {
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  color: #0b0f14;
+}
+
+:global(body.theme-white) .close:hover {
+  background: rgba(0, 0, 0, 0.07);
+}
+
+:global(body.theme-white) .input,
+:global(body.theme-white) .textarea {
+  background: #fff;
+  color: #0b0f14;
+  border: 1px solid rgba(0, 0, 0, 0.16);
+}
+
+:global(body.theme-white) .input::placeholder,
+:global(body.theme-white) .textarea::placeholder {
+  color: rgba(0, 0, 0, 0.45);
+}
+
+:global(body.theme-white) .row small {
+  opacity: 0.72;
+  color: rgba(0, 0, 0, 0.72);
+}
+
+:global(body.theme-white) .secondary {
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  color: #0b0f14;
+}
+
+:global(body.theme-white) .secondary:hover {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+/* ✅ КРИТИЧНО: читаемый success в светлой теме */
+:global(body.theme-white) .success {
+  color: #0b3d1f; /* тёмно-зелёный текст */
+  background: rgba(46, 204, 113, 0.14);
+  border-top: 1px solid rgba(46, 204, 113, 0.35);
+}
+
+/* ✅ КРИТИЧНО: читаемый error в светлой теме */
+:global(body.theme-white) .error {
+  color: #7a1010; /* тёмно-красный текст */
+  background: rgba(231, 76, 60, 0.12);
+  border: 1px solid rgba(231, 76, 60, 0.30);
+}
+
+/* ✅ Ошибки полей в светлой теме */
+:global(body.theme-white) .fieldError {
+  color: #b01818;
+}
+
+:global(body.theme-white) .note {
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: rgba(0, 0, 0, 0.03);
+  color: rgba(0, 0, 0, 0.86);
 }

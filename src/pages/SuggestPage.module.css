@@ -1,0 +1,36 @@
+/* Путь: frontend/src/pages/SuggestPage.module.css
+   Назначение: восстановление вёрстки страницы "Предложить новость"
+*/
+
+.page {
+  min-height: 100vh;
+  padding-top: 92px; /* под фиксированный Navbar */
+  padding-left: 16px;
+  padding-right: 16px;
+  padding-bottom: 40px;
+  box-sizing: border-box;
+  position: relative;
+  z-index: 2;
+}
+
+.wrap {
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.card {
+  background: rgba(20, 24, 32, 0.85);
+  border-radius: 18px;
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(6px);
+}
+
+@media (max-width: 768px) {
+  .page {
+    padding-top: 84px;
+  }
+  .card {
+    padding: 12px;
+  }
+}

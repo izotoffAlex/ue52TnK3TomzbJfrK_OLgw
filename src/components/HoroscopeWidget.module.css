@@ -1,0 +1,223 @@
+/* Путь: frontend/src/components/HoroscopeWidget.module.css
+   Назначение: Стили виджета гороскопа (видимые селекты/табы, аккуратные панели).
+
+   ИЗМЕНЕНИЯ (2026-01-02):
+   ✅ Сделали одинаковую высоту элементов формы (select + кнопки дней) через переменную --hz-control-h
+   ✅ Добавили недостающие классы-алиасы под текущий JSX: .wrapPage, .title, .days (ничего старого не удаляли)
+*/
+
+:root {
+  --hz-control-h: 44px; /* единая высота контролов формы */
+}
+
+.wrap {
+  width: 100%;
+}
+
+/* Алиас для варианта "page" (в JS используется styles.wrapPage) */
+.wrapPage {
+  width: 100%;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+/* На широких экранах — две колонки (слева управление, справа текст) */
+@media (min-width: 900px) {
+  .grid {
+    grid-template-columns: 320px 1fr;
+    align-items: stretch; /* важное: одинаковая высота */
+  }
+}
+
+.panel,
+.result {
+  border-radius: 18px;
+  border: 1px solid rgba(0,0,0,0.10);
+  background: var(--bg-card, #ffffff);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.08);
+}
+
+.panelInner {
+  height: 100%;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* ✅ равномерно по высоте */
+  gap: 14px;
+}
+
+.head {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.kicker {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--app-text, #111);
+}
+
+/* Алиас: в JS используется styles.title */
+.title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--app-text, #111);
+}
+
+.meta {
+  font-size: 12px;
+  opacity: 0.8;
+  color: var(--app-text, #111);
+}
+
+.dot {
+  margin: 0 6px;
+  opacity: 0.7;
+}
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.label {
+  font-size: 12px;
+  opacity: 0.85;
+  color: var(--app-text, #111);
+}
+
+/* Видимый селект и в светлой, и в тёмной теме */
+.select {
+  width: 100%;
+  border-radius: 14px;
+  border: 1px solid rgba(0,0,0,0.18);
+  background: rgba(0,0,0,0.02);
+  color: var(--app-text, #111);
+  outline: none;
+
+  /* ✅ одинаковая высота с кнопками дней */
+  min-height: var(--hz-control-h);
+  height: var(--hz-control-h);
+  padding: 0 12px; /* вместо 10px 12px, чтобы высота была ровно var(--hz-control-h) */
+}
+
+.select:focus {
+  border-color: rgba(212,175,55,0.9);
+  box-shadow: 0 0 0 3px rgba(212,175,55,0.25);
+}
+
+/* Табы дней (старое имя) */
+.dayTabs {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* Алиас: в JS используется styles.days */
+.days {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.dayBtn {
+  border-radius: 999px;
+  border: 1px solid rgba(0,0,0,0.18);
+  background: rgba(0,0,0,0.02);
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--app-text, #111);
+  transition: transform 0.05s ease, box-shadow 0.15s ease, background 0.15s ease;
+
+  /* ✅ одинаковая высота с select */
+  min-height: var(--hz-control-h);
+  height: var(--hz-control-h);
+  padding: 0 12px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.dayBtn:hover {
+  transform: translateY(-1px);
+}
+
+.dayBtnActive {
+  background: rgba(212,175,55,0.18);
+  border-color: rgba(212,175,55,0.75);
+  box-shadow: 0 10px 24px rgba(212,175,55,0.18);
+}
+
+.bottomNote {
+  font-size: 12px;
+  opacity: 0.75;
+  color: var(--app-text, #111);
+}
+
+/* Правая панель */
+.result {
+  padding: 14px;
+  height: 100%;
+}
+
+.resultInner {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.date {
+  font-size: 12px;
+  opacity: 0.75;
+  color: var(--app-text, #111);
+}
+
+.text {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--app-text, #111);
+  white-space: pre-wrap;
+}
+
+.loading {
+  font-size: 14px;
+  opacity: 0.8;
+  color: var(--app-text, #111);
+}
+
+.error {
+  border: 1px solid rgba(220, 38, 38, 0.25);
+  background: rgba(220, 38, 38, 0.06);
+  border-radius: 14px;
+  padding: 12px;
+}
+
+.errorTitle {
+  font-weight: 700;
+  font-size: 13px;
+  margin-bottom: 4px;
+  color: var(--app-text, #111);
+}
+
+.errorText {
+  font-size: 13px;
+  opacity: 0.9;
+  color: var(--app-text, #111);
+}
+
+/* Если где-то нужна “страничная” версия — оставили крючок */
+.page {}

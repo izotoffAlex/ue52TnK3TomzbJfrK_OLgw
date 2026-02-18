@@ -1,0 +1,64 @@
+/* Путь: frontend/src/components/FavoriteButton.module.css
+   Назначение: Внешний вид сердечка (инлайн-кнопка, адаптивный текст) + мягкая подсветка при клике без входа. */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid var(--fav-bd, rgba(255,255,255,.16));
+  background: var(--fav-bg, transparent);
+  color: var(--fav-fg, #f6f7fb);
+  padding: 8px 12px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: transform .08s ease, background .2s ease, border-color .2s ease, color .2s ease;
+  user-select: none;
+}
+.btn:hover { transform: translateY(-1px); }
+.btn:active { transform: translateY(0); }
+
+.label {
+  font-size: 14px;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.on {
+  --fav-fg: var(--brand-accent, #f9c85c);
+  --fav-bd: rgba(249, 200, 92, .5);
+  background: rgba(249, 200, 92, .08);
+}
+.off {
+  --fav-fg: var(--app-text, #f6f7fb);
+  --fav-bd: rgba(255,255,255,.16);
+}
+
+.loading {
+  opacity: .7;
+  pointer-events: none;
+}
+
+/* Подсветка если пользователь не авторизован */
+.attention {
+  animation: favPulse .9s ease;
+  box-shadow: 0 0 0 0 rgba(249, 200, 92, .6);
+}
+@keyframes favPulse {
+  0% { box-shadow: 0 0 0 0 rgba(249, 200, 92, .6); }
+  70% { box-shadow: 0 0 0 10px rgba(249, 200, 92, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(249, 200, 92, 0); }
+}
+
+/* Светлая тема (если есть класс .theme-light на <body> или data-theme/light) */
+:global(body.theme-light) .btn {
+  --fav-fg: #111827;
+  --fav-bd: rgba(0,0,0,.15);
+  color: var(--fav-fg);
+  border-color: var(--fav-bd);
+  background: #fff;
+}
+:global(body.theme-light) .on {
+  --fav-fg: #92400e;
+  --fav-bd: rgba(146,64,14,.35);
+  background: #fff7ed;
+}

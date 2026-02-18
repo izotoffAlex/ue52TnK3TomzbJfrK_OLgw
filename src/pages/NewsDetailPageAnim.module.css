@@ -1,0 +1,19 @@
+/* Путь: frontend/src/pages/NewsDetailPageAnim.module.css
+   Назначение: Нежная анимация появления контента (fade-in) для блоков «Последние» и «Похожие».
+   Примечание: CSS-модуль. Импортируется как `anim` и используется классом `anim.fadeIn`.
+*/
+
+@keyframes fadeInKey {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fadeIn {
+  animation: fadeInKey 220ms ease-out;
+}

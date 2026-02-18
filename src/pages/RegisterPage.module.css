@@ -1,0 +1,216 @@
+/* Путь: frontend/src/pages/RegisterPage.module.css
+   Назначение: Стили страницы регистрации. Поддержка тем:
+     - .theme-white  (светлая)
+     - .theme-graphite (тёмная)
+   Изменения:
+     ✅ Форма стала меньше по размерам
+     ✅ В белой теме карточка чисто белая + белая рамка
+     ✅ Сохранена логика тёмной темы (карточка темнее, текст светлый)
+*/
+
+.page {
+  min-height: calc(100vh - 64px);
+  padding: 26px 16px 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: var(--app-bg, #f3f4f6);
+  color: var(--app-text, #0f172a);
+}
+
+.card {
+  width: min(640px, 100%);
+  border-radius: 18px;
+  padding: 22px 22px;
+
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.12);
+}
+
+/* Светлая тема: “чисто белая” карточка и белая рамка */
+:global(.theme-white) .card {
+  background: #ffffff;
+  border: 2px solid rgba(255, 255, 255, 0.95);
+  box-shadow: 0 16px 46px rgba(0, 0, 0, 0.10);
+}
+
+/* Тёмная тема — делаем карточку темнее (в тон интерфейса) */
+:global(.theme-graphite) .card {
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(15, 22, 41, 0.88);
+  box-shadow: 0 18px 55px rgba(0, 0, 0, 0.35);
+}
+
+.title {
+  margin: 0 0 14px 0;
+  text-align: center;
+  font-size: 24px;
+  font-weight: 900;
+  color: var(--app-text, #0f172a);
+}
+
+.form {
+  width: 100%;
+}
+
+.twoCol {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.label {
+  font-weight: 800;
+  font-size: 16px;
+  color: var(--app-text, #0f172a);
+}
+
+.input {
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.14);
+  outline: none;
+  font-size: 16px;
+
+  background: #ffffff;
+  color: var(--app-text, #0f172a);
+}
+
+:global(.theme-graphite) .input {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(10, 15, 26, 0.65);
+  color: var(--app-text, #f6f7fb);
+}
+
+.input:focus {
+  border-color: rgba(37, 99, 235, 0.8);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.18);
+}
+
+.hint {
+  margin-top: 6px;
+  font-size: 13px;
+  opacity: 0.75;
+}
+
+.errorBox {
+  margin: 10px 0 14px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(127, 29, 29, 0.18);
+  border: 1px solid rgba(220, 38, 38, 0.35);
+  color: var(--app-text, #0f172a);
+}
+
+:global(.theme-graphite) .errorBox {
+  color: #f8fafc;
+}
+
+.submit {
+  width: 100%;
+  border: 0;
+  border-radius: 14px;
+  padding: 16px 14px;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: 900;
+  background: #1d4ed8;
+  color: #ffffff;
+  box-shadow: 0 10px 24px rgba(29, 78, 216, 0.35);
+}
+
+.submit:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.footerLine {
+  margin-top: 12px;
+  font-size: 14px;
+  opacity: 0.85;
+  text-align: left;
+}
+
+.link {
+  font-weight: 800;
+  color: #2563eb;
+  text-decoration: none;
+}
+
+:global(.theme-graphite) .link {
+  color: #93c5fd;
+}
+
+.successBox {
+  margin-top: 10px;
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(0, 0, 0, 0.10);
+  background: rgba(255, 255, 255, 0.75);
+}
+
+:global(.theme-white) .successBox {
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+:global(.theme-graphite) .successBox {
+  border: 1px solid rgba(255, 255, 255, 0.10);
+  background: rgba(10, 15, 26, 0.45);
+}
+
+.successTitle {
+  font-size: 16px;
+  font-weight: 900;
+  margin-bottom: 8px;
+}
+
+.successText {
+  font-size: 14px;
+  opacity: 0.85;
+  line-height: 1.45;
+}
+
+.successActions {
+  margin-top: 12px;
+}
+
+.linkBtn {
+  display: inline-block;
+  padding: 10px 14px;
+  border-radius: 12px;
+  text-decoration: none;
+  font-weight: 900;
+  background: rgba(37, 99, 235, 0.12);
+  border: 1px solid rgba(37, 99, 235, 0.35);
+  color: #1d4ed8;
+}
+
+:global(.theme-graphite) .linkBtn {
+  color: #93c5fd;
+}
+
+/* Мобилка */
+@media (max-width: 720px) {
+  .twoCol {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .card {
+    padding: 18px 14px;
+  }
+  .title {
+    font-size: 22px;
+  }
+}

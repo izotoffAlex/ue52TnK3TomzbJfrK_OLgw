@@ -1,0 +1,29 @@
+/* Путь: frontend/src/components/SmartTicker.css
+   Назначение: стили SmartTicker (без вмешательства в тему).
+*/
+
+.smartTicker {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.smartTicker:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+  border-radius: 10px;
+}
+
+.smartTicker__track {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  will-change: transform;
+}
+
+.smartTicker__content {
+  flex: 0 0 auto;
+}

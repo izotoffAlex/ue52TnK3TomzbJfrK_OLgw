@@ -1,0 +1,50 @@
+/* Путь: frontend/src/components/Ticker.css
+   Назначение: стили “умной” бегущей строки.
+   Важно:
+     - .ticker__static используется, когда контент помещается (без дубля).
+     - .ticker__copy padding-right = зазор между концом и новым началом, когда “бежим”.
+*/
+
+.ticker {
+  width: 100%;
+  min-height: 28px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.ticker__track {
+  width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* Статичный режим (когда всё помещается) */
+.ticker__static {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  white-space: nowrap;
+  width: 100%;
+}
+
+/* Активный режим (когда не помещается) */
+.ticker__content {
+  display: inline-flex;
+  width: max-content;
+  white-space: nowrap;
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+}
+
+.ticker__copy {
+  display: inline-flex;
+  align-items: center;
+  gap: 24px;
+
+  /* зазор перед повтором */
+  padding-right: 48px;
+
+  width: max-content;
+}

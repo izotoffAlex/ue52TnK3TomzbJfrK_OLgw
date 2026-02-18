@@ -1,14 +1,27 @@
 /* Путь: frontend/src/pages/NewsDetailPage.module.css
-   Назначение: Детальная страница новости IzotovLife.
-   Финальная версия:
-   ✅ Центральная обложка новости на всю ширину
-   ✅ Отступы между заголовком, датой и изображением
-   ✅ Увеличенные вертикальные отступы между текстом и медиа
-   ✅ Hover-эффекты для всех изображений и SmartMedia
-   ✅ Сохранены адаптивность и боковые колонки
-*/
+ *
+ * Реализовано в файле:
+ * - 3‑колоночная раскладка страницы (левая/центр/правая) и адаптив до 1 колонки.
+ * - Оформление заголовка, крошек, обложки, текста и медиа внутри статьи.
+ * - Стили блоков «Последние новости» и «Похожие».
+ * - «Мета‑пилюли»: дата/источник/просмотры, включая стили тёмной темы.
+ * - Блок «Мнение IzotovLife» и секции обсуждения, включая отображение абзацев
+ *   (white-space: pre-line, чтобы учитывать переводы строк в izotov_comment).
+ * - Соц‑кнопки авторизации: фиксированный одинаковый размер кнопок и иконок (не зависит от <a>/<button>).
+ * - Общий каркас для будущих комментариев и их адаптив.
+ */
 
-.pageWrap {
+/* ===================== БАЗА/КОНТЕЙНЕРЫ ===================== */
+
+.page {
+  padding: 20px;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0 auto 80px;
+}
+
+.pageWrap,
+.columns {
   max-width: 1360px;
   margin: 0 auto;
   display: grid;
@@ -16,28 +29,32 @@
   gap: 20px;
   justify-content: center;
   align-items: start;
-  padding: 20px;
-  width: 100%;
-  box-sizing: border-box;
-  margin-bottom: 80px;
 }
 
-/* Все три колонки — flex-контейнеры */
-.pageWrap > * {
+.pageWrap > *,
+.columns > * {
   display: flex;
   flex-direction: column;
 }
 
-/* Левая колонка */
-.leftAside {
+.leftAside,
+.rightAside,
+.side {
   background: var(--bg-card, #0f1115);
-  border: 1px solid var(--border, rgba(255,255,255,0.1));
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.1));
   border-radius: 14px;
   padding: 14px;
   overflow-y: auto;
   min-height: 0;
 }
 
+.card {
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+.cardTitle,
 .sectionH {
   font-size: 18px;
   font-weight: 600;
@@ -45,29 +62,20 @@
   color: var(--fg, #fff);
 }
 
-.latestList {
+.scrollBox {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
-.latestItem {
-  font-size: 15px;
-  color: var(--fg, #fff);
-  text-decoration: none;
-  border-bottom: 1px solid var(--border, rgba(255,255,255,0.1));
-  padding-bottom: 6px;
-  transition: color 0.2s ease;
+.muted {
+  color: var(--muted, rgba(255, 255, 255, 0.7));
+  font-size: 14px;
 }
 
-.latestItem:hover {
-  color: var(--accent, #3ea6ff);
-}
-
-/* Центральная колонка */
 .main {
   background: var(--bg-card, #0f1115);
-  border: 1px solid var(--border, rgba(255,255,255,0.1));
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.1));
   border-radius: 14px;
   padding: 20px;
   display: flex;
@@ -75,38 +83,65 @@
   align-items: flex-start;
 }
 
+/* ===================== ЗАГОЛОВОК/КРОШКИ ===================== */
+
 .title {
   font-size: 23px;
   line-height: 1.3;
   font-weight: 700;
-  margin-bottom: 12px; /* отступ до даты */
+  margin: 0 0 12px;
   color: var(--fg, #fff);
 }
 
-/* Метаданные новости (дата и источник) */
-.meta {
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 14px;
-  color: var(--muted, rgba(255,255,255,0.7));
-  margin-bottom: 24px; /* от даты до изображения */
+  color: #5a6b84;
+  margin: 0 0 16px;
+  flex-wrap: wrap;
 }
 
-/* Основная обложка новости — растягивается на всю ширину центральной колонки */
+.breadcrumbs a {
+  color: #1a73e8;
+  text-decoration: none;
+}
+
+.breadcrumbs a:hover {
+  text-decoration: underline;
+}
+
+.breadcrumbSeparator {
+  margin: 0 4px;
+  color: #999;
+}
+
+/* ===================== КРЫШКА/ОБЛОЖКА ===================== */
+
 .cover {
+  width: 100%;
+  display: block;
+  margin: 0 0 24px;
+}
+
+.coverImg {
   width: 100%;
   height: auto;
   border-radius: 10px;
   object-fit: cover;
-  margin-bottom: 24px; /* от изображения до текста */
   display: block;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.cover:hover {
+.coverImg:hover {
   transform: scale(1.02);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
 }
 
-/* Контент новости */
+/* ===================== ТЕКСТ/МЕДИА В ТЕЛЕ ===================== */
+
+.text,
 .body {
   font-size: 17px;
   line-height: 1.6;
@@ -115,26 +150,29 @@
   flex-grow: 1;
 }
 
-/* Изображения и видео внутри текста */
+.text img,
+.text video,
 .body img,
 .body video {
   display: block;
   width: 100%;
   max-width: 100%;
   height: auto;
-  margin: 24px 0; /* увеличено для лучшего разделения с текстом */
+  margin: 24px 0;
   border-radius: 10px;
   object-fit: cover;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
+.text img:hover,
+.text video:hover,
 .body img:hover,
 .body video:hover {
   transform: scale(1.03);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
 }
 
-/* SmartMedia — внутри текста или новости */
+/* SmartMedia */
 .main :global(.smartMedia),
 .main :global(.smartMedia img),
 .main :global(.smartMedia video) {
@@ -145,39 +183,41 @@
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.main :global(.smartMedia):hover,
-.main :global(.smartMedia img):hover,
-.main :global(.smartMedia video):hover {
+.main :global(.smartMedia:hover),
+.main :global(.smartMedia img:hover),
+.main :global(.smartMedia video:hover) {
   transform: scale(1.02);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.25);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
 }
 
-/* Ссылка "Читать в источнике" */
-.external {
-  margin-top: auto;
-}
+/* ===================== ЛЕВАЯ КОЛОНКА: ПОСЛЕДНИЕ ===================== */
 
-.externalLink {
-  color: var(--accent, #f9c85c);
-  text-decoration: none;
-  font-size: 15px;
-}
-
-.externalLink:hover {
-  text-decoration: underline;
-}
-
-/* Правая колонка */
-.rightAside {
-  background: var(--bg-card, #0f1115);
-  border: 1px solid var(--border, rgba(255,255,255,0.1));
-  border-radius: 14px;
-  padding: 12px;
+.latestList {
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
-  min-height: 0;
+  gap: 8px;
 }
+
+.linkLine,
+.latestItem {
+  display: block;
+  white-space: normal;
+  line-height: 1.35;
+  margin: 0 0 8px;
+  color: var(--fg, #fff);
+  text-decoration: none;
+  border-bottom: 1px solid var(--border, rgba(255, 255, 255, 0.1));
+  padding-bottom: 6px;
+  transition: color 0.2s ease;
+  font-size: 16px;
+}
+
+.linkLine:hover,
+.latestItem:hover {
+  color: var(--accent, #3ea6ff);
+}
+
+/* ===================== ПРАВАЯ КОЛОНКА: ПОХОЖИЕ ===================== */
 
 .relList {
   display: flex;
@@ -190,7 +230,7 @@
   align-items: flex-start;
   gap: 10px;
   text-decoration: none;
-  border: 1px solid rgba(255,255,255,0.08);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 10px;
   padding: 8px;
   transition: background 0.2s ease;
@@ -217,86 +257,820 @@
 
 .relSource {
   font-size: 12px;
-  color: var(--muted, rgba(255,255,255,0.7));
+  color: var(--muted, rgba(255, 255, 255, 0.7));
 }
 
-/* Адаптив: на мобильном показываем только центральную колонку */
+.relEmpty {
+  font-size: 14px;
+  color: var(--muted, rgba(255, 255, 255, 0.7));
+}
+
+/* ===================== КНОПКА «ЧИТАТЬ В ИСТОЧНИКЕ» ===================== */
+
+.external {
+  margin-top: auto;
+}
+
+.externalLink {
+  color: var(--accent, #f9c85c);
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.externalLink:hover {
+  text-decoration: underline;
+}
+
+/* ===================== META: ДАТА/ИСТОЧНИК (ПИЛЮЛИ) ===================== */
+
+.metaRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0 14px;
+}
+
+.metaPill {
+  --chip-bg: var(--bg-muted, #f4f6f8);
+  --chip-border: var(--border, #e5e7eb);
+  --chip-text: var(--text, #111827);
+  display: inline-flex !important;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  min-height: 30px;
+  border: 1px solid var(--chip-border);
+  background: var(--chip-bg);
+  color: var(--chip-text);
+  border-radius: 999px;
+  font-size: 0.94rem;
+  line-height: 1;
+  white-space: nowrap;
+  box-shadow: 0 1px 0 rgba(0, 0, 0, 0.03);
+  transition: border-color 0.2s, background-color 0.2s, transform 0.15s;
+}
+
+.metaPill time {
+  color: inherit;
+}
+
+.metaPillTime {}
+.metaPillSource {}
+
+.metaIcon {
+  width: 16px;
+  height: 16px;
+  opacity: 0.9;
+}
+
+.metaFav {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  object-fit: cover;
+}
+
+.sourceDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--text-muted, #6b7280);
+  display: inline-block;
+}
+
+.metaSourceLink,
+.metaSourceLink:visited,
+.metaSourceLink:active {
+  color: inherit;
+  text-decoration: none;
+}
+
+.metaPillSource:hover {
+  border-color: var(--accent, #0b57d0);
+  transform: translateY(-1px);
+}
+
+.metaSourceLabel {
+  color: var(--text-muted, #6b7280);
+  opacity: 0.85;
+  margin-right: 2px;
+}
+
+.metaSourceName {
+  font-weight: 600;
+  color: inherit;
+}
+
+/* ===================== ТЁМНАЯ ТЕМА ===================== */
+
+:root[data-theme="dark"] .metaPill,
+body.theme-dark .metaPill,
+body.theme-graphite .metaPill,
+:root.dark .metaPill,
+body.dark .metaPill,
+html.dark .metaPill,
+.theme-dark .metaPill {
+  --chip-bg: var(--bg-muted, #121317);
+  --chip-border: var(--border, #262626);
+  --chip-text: var(--text, #e5e7eb);
+  border-color: var(--chip-border);
+  background: var(--chip-bg);
+  color: var(--chip-text);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+:root[data-theme="dark"] .metaSourceLabel,
+body.theme-dark .metaSourceLabel,
+body.theme-graphite .metaSourceLabel,
+:root.dark .metaSourceLabel,
+body.dark .metaSourceLabel,
+html.dark .metaSourceLabel,
+.theme-dark .metaSourceLabel {
+  color: var(--text-muted, #94a3b8);
+  opacity: 0.9;
+}
+
+.metaSourceLink:focus-visible {
+  outline: 2px solid var(--accent, #0b57d0);
+  outline-offset: 2px;
+  border-color: var(--accent, #0b57d0);
+}
+
+/* ===================== АДАПТИВ ===================== */
+
 @media (max-width: 960px) {
-  .pageWrap {
-    grid-template-columns: 1fr;
-    max-width: 760px;
+  .page {
     margin-bottom: 60px;
   }
 
-  .leftAside,
+  .pageWrap,
+  .columns {
+    grid-template-columns: 1fr;
+    max-width: 760px;
+  }
+
+  .main {
+    order: 1;
+  }
+
   .rightAside {
-    display: none;
+    order: 2;
+    margin-top: 16px;
+  }
+
+  .leftAside {
+    order: 3;
+    margin-top: 16px;
   }
 }
-/* ================== Хлебные крошки ================== */
-.breadcrumbs {
-  display: flex;
-  align-items: center;
-  gap: 8px; /* расстояние между пунктами */
-  font-size: 14px;
-  color: #5a6b84;
+
+/* ===================== Блок «Мнение IzotovLife» ===================== */
+
+.izotovComment {
+  margin-top: 32px;
+  padding: 20px 24px;
+  background: rgba(255, 255, 255, 0.05);
+  border-left: 4px solid #e8a838;
+  border-radius: 8px;
+
+  /* главное: показывать абзацы по переводам строк в izotov_comment */
+  white-space: pre-line;
+}
+
+.izotovComment h2 {
+  margin: 0 0 12px 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #e8a838;
+}
+
+.izotovCommentDiscuss {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* Авторизация через соцсети */
+
+.socialAuthBlock {
   margin-bottom: 12px;
 }
 
-.breadcrumbs a {
-  color: #1a73e8;
-  text-decoration: none;
-}
-
-.breadcrumbs a:hover {
-  text-decoration: underline;
-}
-
-.breadcrumbSeparator {
-  margin: 0 4px;
-  color: #999;
-}
-.breadcrumbs {
-  display: flex;
-  align-items: center;
-  gap: 8px; /* расстояние между пунктами */
+.socialAuthTitle {
   font-size: 14px;
-  color: #5a6b84;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
+  color: var(--fg, #e5e7eb);
 }
 
-.breadcrumbs a {
-  color: #1a73e8;
-  text-decoration: none;
-}
-
-.breadcrumbs a:hover {
-  text-decoration: underline;
-}
-
-.breadcrumbSeparator {
-  margin: 0 4px;
-  color: #999;
-}
-.breadcrumbs {
-  font-size: 14px;
-  margin: 8px 0 16px 0; /* отступ сверху и снизу */
+.socialAuthButtons {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px; /* расстояние между элементами */
-  color: #555;
+  gap: 10px;
+  align-items: center;
 }
 
-.breadcrumbs a {
+/* квадратные иконки соцсетей */
+.socialAuthButton {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  min-height: 40px;
+  flex: 0 0 40px;
+
+  box-sizing: border-box;
+  padding: 0;
+  line-height: 1;
+
+  border-radius: 10px;
+
+  /* светлые кнопки */
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.14);
+  color: #111827;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
   text-decoration: none;
-  color: #0077cc;
+
+  appearance: none;
+  -webkit-appearance: none;
+
+  transition: background 0.2s ease, transform 0.1s ease, border-color 0.2s ease,
+    box-shadow 0.2s ease;
 }
 
-.breadcrumbs a:hover {
+.socialAuthButton:hover {
+  background: #f4f6f8;
+  border-color: rgba(11, 87, 208, 0.55);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+.socialAuthButton:active {
+  transform: translateY(0);
+}
+
+.socialAuthButton:focus-visible {
+  outline: 2px solid rgba(11, 87, 208, 0.6);
+  outline-offset: 2px;
+}
+
+.socialAuthButton:disabled {
+  opacity: 0.6;
+  cursor: default;
+  transform: none;
+}
+
+.socialAuthButton svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+/* Список комментариев к мнению IzotovLife */
+
+.izotovCommentsBlock {
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+.izotovCommentForm {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.izotovCommentForm textarea {
+  resize: vertical;
+  min-height: 70px;
+  padding: 8px;
+}
+
+.izotovCommentForm button {
+  align-self: flex-start;
+  padding: 6px 12px;
+}
+
+.commentsError {
+  color: #f97373;
+  margin-bottom: 8px;
+}
+
+.commentsLoading,
+.noComments {
+  opacity: 0.8;
+  font-size: 13px;
+  color: var(--muted, rgba(148, 163, 184, 0.95));
+}
+
+.izotovCommentsList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.izotovCommentItem {
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: #fafafa0f;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+}
+
+.commentMeta {
+  display: flex;
+  gap: 8px;
+  font-size: 12px;
+  opacity: 0.8;
+  margin-bottom: 4px;
+}
+
+.commentAuthor {
+  font-weight: 600;
+}
+
+.commentDate {
+  font-size: 0.8rem;
+}
+
+.commentText {
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* ===================== Общий каркас для будущих комментариев ===================== */
+
+.commentsSection {
+  margin-top: 28px;
+  padding: 20px 24px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.35);
+}
+
+.commentsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.commentsTitle {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--fg, #fff);
+}
+
+.commentsCount {
+  font-size: 0.9rem;
+  color: var(--muted, rgba(148, 163, 184, 0.95));
+}
+
+.commentsList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.commentItem {
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.3);
+}
+
+.commentItem:last-child {
+  border-bottom: none;
+}
+
+.commentHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.commentChildren {
+  margin-top: 8px;
+  margin-left: 16px;
+  padding-left: 10px;
+  border-left: 1px solid rgba(148, 163, 184, 0.35);
+}
+
+.commentActions {
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.replyButton {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.85rem;
+  color: var(--accent, #3ea6ff);
+  cursor: pointer;
+}
+
+.replyButton:hover {
   text-decoration: underline;
 }
 
-.breadcrumbSeparator {
-  margin: 0 4px;
-  color: #999;
+.authNotice {
+  margin-top: 8px;
+  font-size: 0.85rem;
+  color: var(--muted, rgba(148, 163, 184, 0.95));
+}
+
+.commentForm {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.commentTextarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.6);
+  background: rgba(15, 17, 21, 0.9);
+  color: var(--fg, #e5e7eb);
+  font-size: 0.95rem;
+  resize: vertical;
+}
+
+.commentTextarea:focus {
+  outline: 2px solid var(--accent, #3ea6ff);
+  outline-offset: 0;
+  border-color: var(--accent, #3ea6ff);
+}
+
+.commentSubmitRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.commentSubmitButton {
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  background: var(--accent, #3ea6ff);
+  color: #0b1120;
+}
+
+.commentSubmitButton:hover {
+  filter: brightness(1.05);
+}
+
+.commentHint {
+  font-size: 0.8rem;
+  color: var(--muted, rgba(148, 163, 184, 0.9));
+}
+
+.commentError {
+  margin-top: 6px;
+  font-size: 0.85rem;
+  color: #f97373;
+}
+
+.commentSuccess {
+  margin-top: 6px;
+  font-size: 0.85rem;
+  color: #4ade80;
+}
+
+@media (max-width: 960px) {
+  .commentsSection {
+    margin-top: 24px;
+    padding: 16px 18px;
+  }
+
+  .commentChildren {
+    margin-left: 12px;
+    padding-left: 8px;
+  }
+}
+
+/* ===================== Скрытые крошки для SEO ===================== */
+
+.breadcrumbsHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+/* Путь: frontend/src/components/NewsCard.module.css */
+
+/* ...токены тем оставляем как есть... */
+
+/* === Карточка === */
+.card {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-card);
+  border: none;
+  box-shadow:
+    inset 0 0 0 1px var(--border-soft),
+    0 10px 26px rgba(0, 0, 0, 0.35);
+  border-radius: 14px;
+  overflow: hidden;
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease,
+    background 0.3s ease,
+    color 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--border-soft) 60%, var(--accent) 40%),
+    0 14px 30px rgba(0, 0, 0, 0.4);
+}
+
+/* === Обёртка изображения === */
+.mediaWrap {
+  position: relative;
+  display: block;
+
+  /* Фиксированная высота блока с картинкой:
+     эта цифра задаёт "размер" карточки по вертикали.
+     Можно менять по вкусу, напр. 220–260px. */
+  height: 220px;
+
+  background: #0b0d11;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* Само изображение заполняет обёртку по высоте */
+.media {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  background-color: #0b0d11;
+}
+
+/* затемнение нижней части изображения */
+.mediaWrap::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 45%;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.55), transparent);
+  pointer-events: none;
+}
+
+/* === дальше файл без изменений (body/title/meta и мобильные фиксы) */
+/* Путь: frontend/src/components/NewsCard.module.css
+   Назначение: Стили карточки NewsCard.
+
+   Главное:
+   - .mediaWrap имеет фиксированную высоту (220px);
+   - .media тянется на height: 100%;
+   - ширина задаётся сеткой (grid) на странице, а не карточкой.
+*/
+
+/* Токены тем (можешь сократить до белой темы, если хочешь) */
+:global(:root),
+:root,
+:global(body.theme-graphite),
+body.theme-graphite,
+:global(.theme-graphite),
+.theme-graphite {
+  --bg-card: #191d24;
+  --text: #f0f2f6;
+  --muted: #9aa4b2;
+  --border-soft: rgba(255, 255, 255, 0.08);
+  --accent: #f9c85c;
+}
+
+:global(body.theme-white),
+body.theme-white,
+:global(.theme-white),
+.theme-white {
+  --bg-card: #ffffff;
+  --text: #111111;
+  --muted: #555555;
+  --border-soft: rgba(0, 0, 0, 0.08);
+  --accent: #1a4b9a;
+}
+
+/* === Карточка === */
+.card {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-card);
+  border: none;
+  box-shadow:
+    inset 0 0 0 1px var(--border-soft),
+    0 10px 26px rgba(0, 0, 0, 0.35);
+  border-radius: 14px;
+  overflow: hidden;
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease,
+    background 0.3s ease,
+    color 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--border-soft) 60%, var(--accent) 40%),
+    0 14px 30px rgba(0, 0, 0, 0.4);
+}
+
+/* === Обёртка изображения === */
+.mediaWrap {
+  position: relative;
+  display: block;
+
+  /* Фиксированная высота карточки с фото.
+     Меняешь это число → карточка выше/ниже, но не "резиновая". */
+  height: 220px;
+
+  background: #0b0d11;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* Картинка растягивается по высоте обёртки */
+.media {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+  background-color: #0b0d11;
+}
+
+/* затемнение нижней части изображения */
+.mediaWrap::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 45%;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.55),
+    transparent
+  );
+  pointer-events: none;
+}
+
+/* === Тело карточки === */
+.body {
+  padding: 12px 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* === Заголовок === */
+.title {
+  font-size: 16px;
+  line-height: 1.25;
+  margin: 0;
+}
+
+.title a {
+  color: var(--text);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.title a:hover {
+  text-decoration: underline;
+  color: var(--accent);
+}
+
+/* === Источник === */
+.sourceLine {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  opacity: 0.9;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.sourceDot {
+  width: 6px;
+  height: 6px;
+  background: var(--muted);
+  border-radius: 50%;
+}
+
+.sourceText {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* === Метаданные === */
+.meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.cat {
+  padding: 4px 8px;
+  background: rgba(154, 164, 178, 0.12);
+  border: 1px solid rgba(154, 164, 178, 0.18);
+  border-radius: 999px;
+  color: var(--text);
+}
+
+.card:hover .cat {
+  background: rgba(249, 200, 92, 0.15);
+  color: var(--accent);
+}
+
+/* === Появление карточки === */
+.card {
+  opacity: 0;
+  transform: translateY(10px);
+  transition:
+    opacity 0.5s ease,
+    transform 0.5s ease,
+    box-shadow 0.12s ease,
+    background 0.3s ease,
+    color 0.3s ease;
+}
+
+.card.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* MOBILE FIX (можно оставить как было) */
+@media (max-width: 768px) {
+  .mediaWrap::after {
+    height: 32%;
+    background: linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.30) 0%,
+      rgba(0, 0, 0, 0.14) 45%,
+      transparent 100%
+    );
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    will-change: opacity, transform;
+  }
+
+  .media {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+}
+
+@media (max-width: 768px) {
+  .card {
+    box-shadow: inset 0 0 0 1px var(--border-soft) !important;
+    transform: none !important;
+    transition:
+      opacity 0.35s ease,
+      background 0.3s ease,
+      color 0.3s ease !important;
+  }
+
+  .card:hover {
+    transform: none !important;
+    box-shadow: inset 0 0 0 1px var(--border-soft) !important;
+  }
+
+  .mediaWrap::after {
+    display: none !important;
+  }
 }

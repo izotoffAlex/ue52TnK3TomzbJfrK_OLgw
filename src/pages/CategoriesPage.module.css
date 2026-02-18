@@ -1,0 +1,121 @@
+/* Путь: frontend/src/pages/CategoriesPage.module.css
+   Назначение: Стили страницы-списка категорий. Учитывают темы через CSS-переменные проекта. */
+
+.page {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 16px;
+  color: var(--app-text, #f6f7fb);
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 800;
+  margin: 8px 0 16px 0;
+}
+
+.error {
+  color: #ff6b6b;
+  margin-top: 12px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+@media (max-width: 1024px) {
+  .grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 640px) {
+  .grid { grid-template-columns: 1fr; }
+}
+
+.card {
+  position: relative;
+  border-radius: 16px;
+  background: var(--card-bg, #111827);
+  overflow: hidden;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.35);
+  border: 1px solid var(--border, rgba(0,0,0,0.5));
+  min-height: 180px;
+}
+
+.cardLink {
+  display: block;
+  color: inherit;
+  text-decoration: none;
+}
+
+.cardMedia {
+  position: relative;
+  width: 100%;
+  height: 220px;
+  overflow: hidden;
+}
+
+.placeholder {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(180deg, rgba(0,0,0,0.15), rgba(0,0,0,0.35));
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(0,0,0,0.0) 30%,
+    rgba(0,0,0,0.55) 100%
+  );
+}
+
+.caption {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Название категории в карточке: белый жирный шрифт поверх затемнённого фона */
+.name {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #ffffff;
+  text-shadow: 0 2px 24px rgba(0,0,0,0.8);
+}
+
+.count {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  font-size: 0.9rem;
+}
+
+.note {
+  margin-top: 12px;
+  color: var(--feed-muted, rgba(246, 247, 251, 0.7));
+}
+
+.skeleton {
+  background-image: linear-gradient(
+    90deg,
+    rgba(255,255,255,0.06) 0%,
+    rgba(255,255,255,0.12) 40%,
+    rgba(255,255,255,0.06) 80%
+  );
+  background-size: 200% 100%;
+  animation: sk 1.2s ease-in-out infinite;
+}
+
+@keyframes sk {
+  0% { background-position: 200% 0; }
+  100% { background-position: 0 0; }
+}

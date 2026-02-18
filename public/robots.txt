@@ -1,3 +1,23 @@
-# https://www.robotstxt.org/robotstxt.html
+# Путь: templates/robots.txt
+# Назначение: robots.txt для IzotovLife (Яндекс/Google).
+# Обновление:
+#   ✅ Clean-param для utm/gclid/fbclid/yclid (чтобы не плодить дубли по параметрам)
+#   ✅ Disallow для служебных страниц (login/register/dashboard)
+
 User-agent: *
-Disallow:
+Disallow: /api/
+Disallow: /admin/
+Disallow: /auth/
+Disallow: /accounts/
+Disallow: /dashboard/
+Disallow: /login
+Disallow: /register
+Disallow: /static/
+Disallow: /media/cache/
+
+Sitemap: https://izotovlife.ru/sitemap.xml
+Host: izotovlife.ru
+
+# Яндекс: склеиваем URL, отличающиеся только “мусорными” параметрами
+Clean-param: utm_source&utm_medium&utm_campaign&utm_term&utm_content /
+Clean-param: gclid&fbclid&yclid /

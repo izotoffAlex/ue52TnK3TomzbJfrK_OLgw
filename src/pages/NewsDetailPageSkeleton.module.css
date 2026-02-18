@@ -1,0 +1,72 @@
+/* Путь: frontend/src/pages/NewsDetailPageSkeleton.module.css
+   Назначение: Скелетоны (shimmer) для правой колонки «Похожие новости»
+               и левой колонки «Последние новости» на детальной странице.
+   Примечание: Отдельный модуль. Ничего не изменяет в NewsDetailPage.module.css.
+*/
+
+/* ---- ПРАВАЯ КОЛОНКА: Похожие ---- */
+
+.skelGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+.skelRelItem {
+  display: grid;
+  grid-template-columns: 84px 1fr;
+  gap: 12px;
+  align-items: center;
+  background: var(--bg-card, #0b1220);
+  border: 1px solid var(--line, #1e2a44);
+  border-radius: 12px;
+  padding: 8px;
+  overflow: hidden;
+}
+
+@keyframes shimmer {
+  0%   { background-position: -240px 0; }
+  100% { background-position: 240px 0; }
+}
+
+.skelThumb {
+  width: 84px;
+  height: 84px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #0c1423 0px, #13213a 120px, #0c1423 240px);
+  background-size: 240px 100%;
+  animation: shimmer 1.2s infinite linear;
+}
+
+.skelLines {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.skelLine,
+.skelLineShort {
+  height: 12px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, #0c1423 0px, #13213a 120px, #0c1423 240px);
+  background-size: 240px 100%;
+  animation: shimmer 1.2s infinite linear;
+}
+
+.skelLineShort { width: 60%; }
+
+/* ---- ЛЕВАЯ КОЛОНКА: Последние ---- */
+
+.skelLatestCol {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.skelLatestLine {
+  height: 14px;
+  border-radius: 7px;
+  background: linear-gradient(90deg, #0c1423 0px, #13213a 180px, #0c1423 360px);
+  background-size: 360px 100%;
+  animation: shimmer 1.2s infinite linear;
+}

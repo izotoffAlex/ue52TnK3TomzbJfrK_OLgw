@@ -1,44 +1,113 @@
-/* frontend/src/index.css
-   Назначение: Tailwind + глобальные стили + скелетоны + кастомный лоадер + версии для слабовидящих
-   Путь: frontend/src/index.css */
+/* Путь: frontend/src/index.css
+   Назначение: Tailwind + глобальные стили + скелетоны + кастомный лоадер + версии для слабовидящих. */
 
-/* Сначала Tailwind */
+/* === 1) Tailwind === */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Дальше — твои кастомные переменные и стили */
+/* === 2) Базовые переменные и темы ===
+   По умолчанию (в :root) — графитовая тема. */
 :root {
-  --brand-bg: #0b132b;          /* графитово-синий фон */
-  --brand-fg: #f5f7ff;          /* светлый текст */
-  --brand-accent: #d4af37;      /* золото */
-  --brand-accent-2: #ffcf6f;    /* светлее золота для градиента */
+  /* Графитовая — по умолчанию */
+  --app-bg: #20242c;          /* графитовый фон */
+  --app-text: #f6f7fb;        /* основной текст */
+  --app-border: #000000;      /* тёмные рамки (дефолт) */
+
+  --brand-accent: #d4af37;    /* золото */
+  --brand-accent-2: #ffcf6f;  /* светлее золота (hover) */
+
+  /* Карточки/контент */
   --card-bg: #111827;
-  --border: #1f2937;
+  --border: var(--app-border);
+
+  /* Доп. токены, используемые модулями */
+  --fg: #f6f7fb;
+  --muted: #9aa4b2;
+  --accent: var(--brand-accent);
+  --bg-card: var(--card-bg);
 }
 
-* { box-sizing: border-box }
-html, body, #root { height: 100% }
+/* Графитовая тема: через класс или на <body> */
+body.theme-graphite,
+.theme-graphite {
+  color-scheme: dark;
+
+  --app-bg: #20242c;
+  --app-text: #f6f7fb;
+  --app-border: #000000;
+
+  --card-bg: #111827;
+  --border: var(--app-border);
+
+  --fg: #f6f7fb;
+  --muted: #9aa4b2;
+  --accent: var(--brand-accent);
+  --bg-card: var(--card-bg);
+}
+
+/* Белая тема: через класс или на <body> (и алиас theme-light) */
+html.theme-white,
+html.theme-light,
+body.theme-white,
+body.theme-light,
+.theme-white,
+.theme-light,
+:root[data-theme="light"],
+html[data-theme="light"],
+body[data-theme="light"] {
+  color-scheme: light;
+
+  --app-bg: #ffffff;
+  --app-text: #111111;
+  --app-border: rgba(0, 0, 0, 0.12); /* мягкая нейтральная рамка */
+  --card-bg: #ffffff;
+  --border: var(--app-border);
+
+  --fg: #111111;
+  --muted: rgba(17, 17, 17, 0.65);
+  --accent: var(--brand-accent);
+  --bg-card: var(--card-bg);
+}
+
+
+/* === 3) Глобальные базовые стили === */
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; }
+
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans','Helvetica Neue', Arial;
-  background: var(--brand-bg);
-  color: var(--brand-fg);
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Fira Sans', 'Droid Sans', 'Helvetica Neue', Arial;
+  background: var(--app-bg);
+  color: var(--app-text);
 }
 
-a { color: var(--brand-accent); text-decoration: none; }
-a:hover { opacity: .85 }
+/* Ссылки: по умолчанию — акцент (для тёмной темы/техблоков).
+   На светлой теме ниже добавим явные переопределения. */
+a {
+  color: var(--brand-accent);
+  text-decoration: none;
+}
+a:hover {
+  color: var(--brand-accent-2);
+  text-decoration: underline;
+}
 
-/* --- Базовое меню --- */
+/* --- Базовое меню (например, сайдбар) --- */
 .sidebar-menu {
-  background: #111;
-  color: white;
+  background: var(--bg-card, #111);
+  color: var(--fg, #ffffff);
+  border: 1px solid var(--border, rgba(255, 255, 255, 0.12));
 }
-.sidebar-menu a {
-  color: white;
+.sidebar-menu a { color: inherit; }
+
+/* В светлой теме ссылки внутри меню принудительно тёмные (читабельность) */
+body.theme-white .sidebar-menu a,
+.theme-white .sidebar-menu a {
+  color: #111111;
 }
 
-/* --- Стили для слабовидящих --- */
+/* === 4) Режимы для слабовидящих === */
 
 /* Жёлтый на чёрном */
 body.low-vision-yellow {
@@ -77,8 +146,1553 @@ body.low-vision-white .sidebar-menu a {
 }
 
 /* Цвет крестика в меню */
-.close-btn {
-  color: white;
-}
+.close-btn { color: white; }
 body.low-vision-yellow .close-btn { color: #ff0 !important; }
 body.low-vision-white .close-btn { color: #fff !important; }
+
+/* === 5) Тематические оверрайды читабельности (append-only, не удалять) === */
+
+/* 5.1 Светлая тема → статические страницы/CKEditor: текст принудительно чёрный */
+body.theme-white .static-page,
+body.theme-white .static-page *:not(a),
+body.theme-white .page-static,
+body.theme-white .page-static *:not(a),
+body.theme-white .StaticPage,
+body.theme-white .StaticPage *:not(a),
+body.theme-white .ck-content,
+body.theme-white .ck-content *:not(a) {
+  color: #111 !important;
+  text-shadow: none !important;
+  opacity: 1 !important; /* на случай полупрозрачных стилей */
+}
+
+/* Ссылки внутри статичных страниц на светлой теме — читаемые, с нормальным hover */
+body.theme-white .static-page a,
+body.theme-white .page-static a,
+body.theme-white .StaticPage a,
+body.theme-white .ck-content a {
+  color: #0b57d0 !important;
+  text-decoration-color: #0b57d0 !important;
+}
+body.theme-white .static-page a:hover,
+body.theme-white .page-static a:hover,
+body.theme-white .StaticPage a:hover,
+body.theme-white .ck-content a:hover {
+  color: #0948ad !important;
+  text-decoration: underline !important;
+}
+
+/* 5.2 Тёмная тема → «пилюли» даты/источника на детальной странице: текст чёрный */
+body.theme-graphite .news-detail .meta,
+body.theme-graphite .news-detail .meta *,
+body.theme-graphite .news-detail [class*="pill"],
+body.theme-graphite .news-detail [class*="pill"] *,
+body.theme-graphite .news-detail [class*="chip"],
+body.theme-graphite .news-detail [class*="chip"] *,
+body.theme-graphite .news-detail [class*="badge"],
+body.theme-graphite .news-detail [class*="badge"] *,
+body.theme-graphite .news-detail [class*="date"],
+body.theme-graphite .news-detail [class*="date"] *,
+body.theme-graphite .news-detail [class*="source"],
+body.theme-graphite .news-detail [class*="source"] *,
+/* распространённые альтернативные контейнеры */
+body.theme-graphite .NewsDetailPage [class*="pill"],
+body.theme-graphite .NewsDetailPage [class*="pill"] *,
+body.theme-graphite .NewsDetailPage [class*="chip"],
+body.theme-graphite .NewsDetailPage [class*="chip"] *,
+body.theme-graphite .NewsDetailPage [class*="badge"],
+body.theme-graphite .NewsDetailPage [class*="badge"] *,
+body.theme-graphite .NewsDetailPage [class*="date"],
+body.theme-graphite .NewsDetailPage [class*="date"] *,
+body.theme-graphite .NewsDetailPage [class*="source"],
+body.theme-graphite .NewsDetailPage [class*="source"] * {
+  color: #111 !important;
+  text-shadow: none !important;
+  opacity: 1 !important;
+}
+
+/* (опционально) если «пилюли» уже со светлым фоном — просто усилим контур */
+body.theme-graphite .news-detail [class*="pill"],
+body.theme-graphite .news-detail [class*="chip"],
+body.theme-graphite .news-detail [class*="badge"],
+body.theme-graphite .NewsDetailPage [class*="pill"],
+body.theme-graphite .NewsDetailPage [class*="chip"],
+body.theme-graphite .NewsDetailPage [class*="badge"] {
+  border-color: rgba(0, 0, 0, 0.18) !important;
+}
+
+/* === 8) Светлая тема: чёрный текст на статичных страницах из футера (append-only) === */
+body.theme-white .static-page,
+body.theme-white .page-static,
+body.theme-white .StaticPage,
+body.theme-white .policy-page,
+body.theme-white .privacy-page,
+body.theme-white .terms-page,
+body.theme-white .rules-page,
+body.theme-white .about-page,
+body.theme-white .editorial-page,
+body.theme-white .ads-page,
+body.theme-white .contacts-page,
+body.theme-white [data-page="static"],
+body.theme-white [data-static="true"] {
+  color: #000 !important;
+}
+
+/* Заголовки/абзацы/списки внутри этих страниц — гарантированно чёрные */
+body.theme-white .static-page h1,
+body.theme-white .static-page h2,
+body.theme-white .static-page h3,
+body.theme-white .static-page h4,
+body.theme-white .static-page h5,
+body.theme-white .static-page h6,
+body.theme-white .static-page p,
+body.theme-white .static-page li,
+body.theme-white .page-static h1,
+body.theme-white .page-static h2,
+body.theme-white .page-static h3,
+body.theme-white .page-static h4,
+body.theme-white .page-static h5,
+body.theme-white .page-static h6,
+body.theme-white .page-static p,
+body.theme-white .page-static li,
+body.theme-white .StaticPage h1,
+body.theme-white .StaticPage h2,
+body.theme-white .StaticPage h3,
+body.theme-white .StaticPage h4,
+body.theme-white .StaticPage h5,
+body.theme-white .StaticPage h6,
+body.theme-white .StaticPage p,
+body.theme-white .StaticPage li,
+body.theme-white [data-page="static"] h1,
+body.theme-white [data-page="static"] h2,
+body.theme-white [data-page="static"] h3,
+body.theme-white [data-page="static"] h4,
+body.theme-white [data-page="static"] h5,
+body.theme-white [data-page="static"] h6,
+body.theme-white [data-page="static"] p,
+body.theme-white [data-page="static"] li,
+body.theme-white [data-static="true"] h1,
+body.theme-white [data-static="true"] h2,
+body.theme-white [data-static="true"] h3,
+body.theme-white [data-static="true"] h4,
+body.theme-white [data-static="true"] h5,
+body.theme-white [data-static="true"] h6,
+body.theme-white [data-static="true"] p,
+body.theme-white [data-static="true"] li,
+body.theme-white .ck-content,
+body.theme-white .ck-content *:not(a) {
+  color: #000 !important;
+  text-shadow: none !important;
+  opacity: 1 !important;
+}
+
+/* Ссылки на таких страницах — читаемые */
+body.theme-white .static-page a,
+body.theme-white .page-static a,
+body.theme-white .StaticPage a,
+body.theme-white [data-page="static"] a,
+body.theme-white [data-static="true"] a,
+body.theme-white .ck-content a {
+  color: #0b57d0 !important;
+  text-decoration-color: #0b57d0 !important;
+}
+body.theme-white .static-page a:hover,
+body.theme-white .page-static a:hover,
+body.theme-white .StaticPage a:hover,
+body.theme-white [data-page="static"] a:hover,
+body.theme-white [data-static="true"] a:hover,
+body.theme-white .ck-content a:hover {
+  color: #0948ad !important;
+  text-decoration: underline !important;
+}
+
+/* === 9) Светлая тема: статичные страницы из футера — чёрный текст (append-only) === */
+body.theme-white :where(
+  .static-page,
+  .page-static,
+  .StaticPage,
+  .policy-page,
+  .privacy-page,
+  .terms-page,
+  .rules-page,
+  .about-page,
+  .editorial-page,
+  .ads-page,
+  .contacts-page,
+  [data-page="static"],
+  [data-static="true"],
+  .ck-content,
+  .prose,
+  .content,
+  .page,
+  article,
+  main
+) :where(h1,h2,h3,h4,h5,h6,p,li,ul,ol,blockquote,small,span,div,dt,dd,code,pre,table,th,td,figcaption) {
+  color: #111 !important;
+  text-shadow: none !important;
+  opacity: 1 !important;
+}
+body.theme-white :where(
+  .static-page,
+  .page-static,
+  .StaticPage,
+  .policy-page,
+  .privacy-page,
+  .terms-page,
+  .rules-page,
+  .about-page,
+  .editorial-page,
+  .ads-page,
+  .contacts-page,
+  [data-page="static"],
+  [data-static="true"],
+  .ck-content,
+  .prose,
+  .content,
+  .page,
+  article,
+  main
+) a {
+  color: #0b57d0 !important;
+  text-decoration-color: #0b57d0 !important;
+}
+body.theme-white :where(
+  .static-page,
+  .page-static,
+  .StaticPage,
+  .policy-page,
+  .privacy-page,
+  .terms-page,
+  .rules-page,
+  .about-page,
+  .editorial-page,
+  .ads-page,
+  .contacts-page,
+  [data-page="static"],
+  [data-static="true"],
+  .ck-content,
+  .prose,
+  .content,
+  .page,
+  article,
+  main
+) a:hover {
+  color: #0948ad !important;
+  text-decoration: underline !important;
+}
+
+/* === 10) Футер: ссылки — чёрные в светлой теме (append-only) === */
+body.theme-white footer a,
+body.theme-white .footer a,
+body.theme-white .site-footer a,
+body.theme-white [data-role="footer"] a {
+  color: #000 !important;
+  text-decoration-color: #000 !important;
+}
+body.theme-white footer a:hover,
+body.theme-white .footer a:hover,
+body.theme-white .site-footer a:hover,
+body.theme-white [data-role="footer"] a:hover {
+  color: #000 !important;
+  text-decoration: underline !important;
+}
+body.theme-white footer,
+body.theme-white .footer,
+body.theme-white .site-footer,
+body.theme-white [data-role="footer"] {
+  color: #111 !important;
+}
+
+/* ===================================================================== */
+/* Графитовая палитра (для тёмной темы) — токены */
+:root {
+  --graphite-980: #0d0f12;
+  --graphite-960: #111318;
+  --graphite-940: #141820;
+  --graphite-920: #1a1f27;  /* базовый фон */
+  --graphite-900: #1e242d;  /* карточки/навигация */
+  --graphite-840: #252c36;
+  --graphite-800: #2a313c;  /* бордер/подложки */
+  --graphite-700: #3a4352;
+  --graphite-600: #4a5565;
+  --graphite-500: #9aa3b2;
+  --graphite-100: #e6eaf0;
+}
+:root { --app-border: var(--graphite-800); --border: var(--app-border); }
+body.theme-graphite,
+.theme-graphite {
+  --app-bg: var(--graphite-920);
+  --app-text: #f5f7fa;
+  --app-border: var(--graphite-800);
+  --card-bg: var(--graphite-900);
+  --border: var(--app-border);
+
+  --fg: var(--app-text);
+  --muted: var(--graphite-500);
+  --bg-card: var(--card-bg);
+
+  --navbar-bg: var(--graphite-900);
+  --navbar-border: var(--graphite-800);
+  --widget-bg: var(--graphite-900);
+  --widget-text: var(--app-text);
+  --icon-color: var(--app-text);
+  --icon-muted: var(--graphite-600);
+}
+body.theme-graphite .navbar {
+  background: var(--navbar-bg) !important;
+  border-bottom: 1px solid var(--navbar-border) !important;
+  color: var(--app-text) !important;
+}
+body.theme-graphite .navbar svg { color: var(--icon-color); fill: currentColor; }
+body.theme-graphite .card,
+body.theme-graphite .panel,
+body.theme-graphite .modal,
+body.theme-graphite .dropdown,
+body.theme-graphite .menu,
+body.theme-graphite .popover {
+  background: var(--bg-card);
+  color: var(--app-text);
+  border: 1px solid var(--border);
+}
+body.theme-graphite .widget {
+  background: var(--widget-bg);
+  color: var(--widget-text);
+  border: 1px solid var(--border);
+}
+body.theme-graphite input,
+body.theme-graphite textarea,
+body.theme-graphite select {
+  background: var(--bg-card);
+  color: var(--app-text);
+  border: 1px solid var(--border);
+}
+body.theme-graphite input::placeholder,
+body.theme-graphite textarea::placeholder { color: var(--graphite-600); }
+body.theme-graphite .search-dropdown {
+  background: var(--bg-card);
+  color: var(--app-text);
+  border: 1px solid var(--border);
+}
+body.theme-graphite .search-item { color: var(--app-text); }
+body.theme-graphite .search-item:hover { background: var(--graphite-840); }
+body.theme-graphite .sidebar,
+body.theme-graphite .aside,
+body.theme-graphite .related,
+body.theme-graphite .relatedBlock {
+  background: var(--bg-card);
+  color: var(--app-text);
+  border: 1px solid var(--border);
+}
+body.theme-graphite a { color: var(--brand-accent); }
+body.theme-graphite a:hover {
+  color: var(--brand-accent-2);
+  text-decoration-color: var(--brand-accent-2);
+}
+body.theme-graphite svg { color: var(--icon-color); fill: currentColor; }
+body.theme-graphite .sidebar-menu {
+  background: var(--bg-card);
+  color: var(--fg);
+  border: 1px solid var(--border);
+}
+body.theme-graphite footer,
+body.theme-graphite .footer,
+body.theme-graphite .site-footer {
+  background: var(--graphite-900);
+  color: var(--app-text);
+  border-top: 1px solid var(--navbar-border);
+}
+body.theme-graphite footer a,
+body.theme-graphite .footer a,
+body.theme-graphite .site-footer a { color: var(--app-text); }
+body.theme-graphite footer a:hover,
+body.theme-graphite .footer a:hover,
+body.theme-graphite .site-footer a:hover {
+  color: var(--brand-accent-2);
+  text-decoration-color: var(--brand-accent-2);
+}
+
+/* ===================================================================== */
+/* 7.2 СВЕТЛАЯ ТЕМА: ссылки — графитовые, hover — голубые (глобально) */
+body.theme-white a {
+  color: #2b313b !important;
+  text-decoration: none !important;
+}
+body.theme-white a:hover {
+  color: #0b57d0 !important;
+  text-decoration: underline !important;
+}
+
+/* ===================================================================== */
+/* 7.4 ТЁМНАЯ ТЕМА: ЖЁСТКИЕ ОВЕРРАЙДЫ «ПИЛЮЛЬ» ДАТЫ/ИСТОЧНИКА (деталка) */
+body.theme-graphite .news-detail,
+body.theme-graphite .NewsDetailPage,
+body.theme-graphite [data-role="news-detail"] {
+  --meta-pill-bg: #f3f6fa;
+  --meta-pill-text: #111111;
+  --meta-pill-border: rgba(0,0,0,.22);
+  --meta-pill-link: #0b57d0;
+  --meta-pill-link-hover: #0948ad;
+}
+body.theme-graphite .news-detail .meta [class*="pill"],
+body.theme-graphite .news-detail .meta [class*="chip"],
+body.theme-graphite .news-detail .meta [class*="badge"],
+body.theme-graphite .news-detail .meta [class*="date"],
+body.theme-graphite .news-detail .meta [class*="time"],
+body.theme-graphite .news-detail .meta [class*="source"],
+body.theme-graphite .NewsDetailPage .meta [class*="pill"],
+body.theme-graphite .NewsDetailPage .meta [class*="chip"],
+body.theme-graphite .NewsDetailPage .meta [class*="badge"],
+body.theme-graphite .NewsDetailPage .meta [class*="date"],
+body.theme-graphite .NewsDetailPage .meta [class*="time"],
+body.theme-graphite .NewsDetailPage .meta [class*="source"],
+body.theme-graphite [data-role="news-detail"] .meta [class*="pill"],
+body.theme-graphite [data-role="news-detail"] .meta [class*="chip"],
+body.theme-graphite [data-role="news-detail"] .meta [class*="badge"],
+body.theme-graphite [data-role="news-detail"] .meta [class*="date"],
+body.theme-graphite [data-role="news-detail"] .meta [class*="time"],
+body.theme-graphite [data-role="news-detail"] .meta [class*="source"] {
+  background: var(--meta-pill-bg) !important;
+  color: var(--meta-pill-text) !important;
+  border: 1px solid var(--meta-pill-border) !important;
+  box-shadow: 0 1px 0 rgba(0,0,0,.06);
+}
+body.theme-graphite .news-detail .meta [class*="source"] a,
+body.theme-graphite .NewsDetailPage .meta [class*="source"] a,
+body.theme-graphite [data-role="news-detail"] .meta [class*="source"] a {
+  color: var(--meta-pill-link) !important;
+  text-decoration: none !important;
+  font-weight: 600;
+}
+body.theme-graphite .news-detail .meta [class*="source"] a:hover,
+body.theme-graphite .NewsDetailPage .meta [class*="source"] a:hover,
+body.theme-graphite [data-role="news-detail"] .meta [class*="source"] a:hover {
+  color: var(--meta-pill-link-hover) !important;
+  text-decoration: underline !important;
+}
+
+/* ===================================================================== */
+/* 7.5 ТЁМНАЯ ТЕМА: ГРАФИТОВЫЕ «ПИЛЮЛИ» (в цвет темы, читабельные) */
+body.theme-graphite .news-detail,
+body.theme-graphite .NewsDetailPage,
+body.theme-graphite [data-role="news-detail"] {
+  --meta-pill-bg-dark: var(--graphite-840);
+  --meta-pill-text-dark: #f5f7fa;
+  --meta-pill-border-dark: var(--graphite-700);
+  --meta-pill-link-dark: #f5f7fa;
+  --meta-pill-link-dark-hover: #4da3ff;
+}
+body.theme-graphite .news-detail .meta [class*="pill"],
+body.theme-graphite .news-detail .meta [class*="chip"],
+body.theme-graphite .news-detail .meta [class*="badge"],
+body.theme-graphite .news-detail .meta [class*="date"],
+body.theme-graphite .news-detail .meta [class*="time"],
+body.theme-graphite .news-detail .meta [class*="source"],
+body.theme-graphite .NewsDetailPage .meta [class*="pill"],
+body.theme-graphite .NewsDetailPage .meta [class*="chip"],
+body.theme-graphite .NewsDetailPage .meta [class*="badge"],
+body.theme-graphite .NewsDetailPage .meta [class*="date"],
+body.theme-graphite .NewsDetailPage .meta [class*="time"],
+body.theme-graphite .NewsDetailPage .meta [class*="source"],
+body.theme-graphite [data-role="news-detail"] .meta [class*="pill"],
+body.theme-graphite [data-role="news-detail"] .meta [class*="chip"],
+body.theme-graphite [data-role="news-detail"] .meta [class*="badge"],
+body.theme-graphite [data-role="news-detail"] .meta [class*="date"],
+body.theme-graphite [data-role="news-detail"] .meta [class*="time"],
+body.theme-graphite [data-role="news-detail"] .meta [class*="source"] {
+  background: var(--meta-pill-bg-dark) !important;
+  color: var(--meta-pill-text-dark) !important;
+  border: 1px solid var(--meta-pill-border-dark) !important;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02);
+}
+body.theme-graphite .news-detail .meta [class*="pill"] svg,
+body.theme-graphite .NewsDetailPage .meta [class*="pill"] svg,
+body.theme-graphite [data-role="news-detail"] .meta [class*="pill"] svg,
+body.theme-graphite .news-detail .meta [class*="date"],
+body.theme-graphite .news-detail .meta [class*="time"],
+body.theme-graphite .NewsDetailPage .meta [class*="date"],
+body.theme-graphite .NewsDetailPage .meta [class*="time"],
+body.theme-graphite [data-role="news-detail"] .meta [class*="date"],
+body.theme-graphite [data-role="news-detail"] .meta [class*="time"] {
+  color: var(--meta-pill-text-dark) !important;
+  fill: currentColor !important;
+}
+body.theme-graphite .news-detail .meta [class*="source"] a,
+body.theme-graphite .NewsDetailPage .meta [class*="source"] a,
+body.theme-graphite [data-role="news-detail"] .meta [class*="source"] a {
+  color: var(--meta-pill-link-dark) !important;
+  text-decoration: none !important;
+  font-weight: 600;
+}
+body.theme-graphite .news-detail .meta [class*="source"] a:hover,
+body.theme-graphite .NewsDetailPage .meta [class*="source"] a:hover,
+body.theme-graphite [data-role="news-detail"] .meta [class*="source"] a:hover {
+  color: var(--meta-pill-link-dark-hover) !important;
+  text-decoration: underline !important;
+}
+
+/* ===================================================================== */
+/* 7.6 ТЁМНАЯ ТЕМА: ULTRA-SPECIFIC SUPER-OVERRIDE (перебивает модули/inline)
+   БЕЗ :where; повышенная специфичность за счёт дублирования селекторов. */
+body.theme-graphite .news-detail .meta [class*="pill"][class*="pill"],
+body.theme-graphite .news-detail .meta [class*="chip"][class*="chip"],
+body.theme-graphite .news-detail .meta [class*="badge"][class*="badge"],
+body.theme-graphite .news-detail .meta [class*="date"][class*="date"],
+body.theme-graphite .news-detail .meta [class*="time"][class*="time"],
+body.theme-graphite .news-detail .meta [class*="source"][class*="source"],
+body.theme-graphite .NewsDetailPage .meta [class*="pill"][class*="pill"],
+body.theme-graphite .NewsDetailPage .meta [class*="chip"][class*="chip"],
+body.theme-graphite .NewsDetailPage .meta [class*="badge"][class*="badge"],
+body.theme-graphite .NewsDetailPage .meta [class*="date"][class*="date"],
+body.theme-graphite .NewsDetailPage .meta [class*="time"][class*="time"],
+body.theme-graphite .NewsDetailPage .meta [class*="source"][class*="source"],
+body.theme-graphite [data-role="news-detail"] .meta [class*="pill"][class*="pill"],
+body.theme-graphite [data-role="news-detail"] .meta [class*="chip"][class*="chip"],
+body.theme-graphite [data-role="news-detail"] .meta [class*="badge"][class*="badge"],
+body.theme-graphite [data-role="news-detail"] .meta [class*="date"][class*="date"],
+body.theme-graphite [data-role="news-detail"] .meta [class*="time"][class*="time"],
+body.theme-graphite [data-role="news-detail"] .meta [class*="source"][class*="source"] {
+  background-color: var(--graphite-840) !important;
+  background-image: none !important;
+  color: #f5f7fa !important;
+  border: 1px solid var(--graphite-700) !important;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02) !important;
+  -webkit-text-fill-color: #f5f7fa !important; /* на случай масок текста */
+}
+
+/* Иконки внутри — светлые */
+body.theme-graphite .news-detail .meta [class*="pill"][class*="pill"] svg,
+body.theme-graphite .news-detail .meta [class*="chip"][class*="chip"] svg,
+body.theme-graphite .news-detail .meta [class*="badge"][class*="badge"] svg,
+body.theme-graphite .news-detail .meta [class*="date"][class*="date"] svg,
+body.theme-graphite .news-detail .meta [class*="time"][class*="time"] svg,
+body.theme-graphite .news-detail .meta [class*="source"][class*="source"] svg,
+body.theme-graphite .NewsDetailPage .meta [class*="pill"][class*="pill"] svg,
+body.theme-graphite .NewsDetailPage .meta [class*="chip"][class*="chip"] svg,
+body.theme-graphite .NewsDetailPage .meta [class*="badge"][class*="badge"] svg,
+body.theme-graphite .NewsDetailPage .meta [class*="date"][class*="date"] svg,
+body.theme-graphite .NewsDetailPage .meta [class*="time"][class*="time"] svg,
+body.theme-graphite .NewsDetailPage .meta [class*="source"][class*="source"] svg {
+  color: #f5f7fa !important;
+  fill: currentColor !important;
+}
+
+/* Ссылка источника — светлая; при наведении — голубая */
+body.theme-graphite .news-detail .meta [class*="source"][class*="source"] a,
+body.theme-graphite .NewsDetailPage .meta [class*="source"][class*="source"] a,
+body.theme-graphite [data-role="news-detail"] .meta [class*="source"][class*="source"] a {
+  color: #f5f7fa !important;
+  text-decoration: none !important;
+  font-weight: 600;
+}
+body.theme-graphite .news-detail .meta [class*="source"][class*="source"] a:hover,
+body.theme-graphite .NewsDetailPage .meta [class*="source"][class*="source"] a:hover,
+body.theme-graphite [data-role="news-detail"] .meta [class*="source"][class*="source"] a:hover {
+  color: #4da3ff !important;
+  text-decoration: underline !important;
+}
+
+/* Псевдоэлементы, если они рисовали белый фон — обнуляем */
+body.theme-graphite .news-detail .meta [class*="pill"][class*="pill"]::before,
+body.theme-graphite .news-detail .meta [class*="pill"][class*="pill"]::after,
+body.theme-graphite .news-detail .meta [class*="date"][class*="date"]::before,
+body.theme-graphite .news-detail .meta [class*="date"][class*="date"]::after,
+body.theme-graphite .news-detail .meta [class*="time"][class*="time"]::before,
+body.theme-graphite .news-detail .meta [class*="time"][class*="time"]::after,
+body.theme-graphite .news-detail .meta [class*="source"][class*="source"]::before,
+body.theme-graphite .news-detail .meta [class*="source"][class*="source"]::after,
+body.theme-graphite .NewsDetailPage .meta [class*="pill"][class*="pill"]::before,
+body.theme-graphite .NewsDetailPage .meta [class*="pill"][class*="pill"]::after,
+body.theme-graphite .NewsDetailPage .meta [class*="date"][class*="date"]::before,
+body.theme-graphite .NewsDetailPage .meta [class*="date"][class*="date"]::after,
+body.theme-graphite .NewsDetailPage .meta [class*="time"][class*="time"]::before,
+body.theme-graphite .NewsDetailPage .meta [class*="time"][class*="time"]::after,
+body.theme-graphite .NewsDetailPage .meta [class*="source"][class*="source"]::before,
+body.theme-graphite .NewsDetailPage .meta [class*="source"][class*="source"]::after {
+  background: transparent !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+/* ===================================================================== */
+/* 7.7 ТЁМНАЯ ТЕМА: ФИНАЛЬНЫЙ ОВЕРРАЙД — дата/время/источник ЧЁРНЫЕ НА СВЕТЛЫХ ПЛАШКАХ
+   ВАЖНО: держать этот блок в самом низу файла. Ничего не удаляем. */
+body.theme-graphite .news-detail .meta [class*="date"],
+body.theme-graphite .news-detail .meta [class*="time"],
+body.theme-graphite .news-detail .meta [class*="source"],
+body.theme-graphite .NewsDetailPage .meta [class*="date"],
+body.theme-graphite .NewsDetailPage .meta [class*="time"],
+body.theme-graphite .NewsDetailPage .meta [class*="source"],
+body.theme-graphite [data-role="news-detail"] .meta [class*="date"],
+body.theme-graphite [data-role="news-detail"] .meta [class*="time"],
+body.theme-graphite [data-role="news-detail"] .meta [class*="source"] {
+  background: #ffffff !important;               /* светлая плашка */
+  color: #000000 !important;                     /* чёрный текст */
+  -webkit-text-fill-color: #000000 !important;   /* на случай масок */
+  border: 1px solid rgba(0,0,0,0.22) !important; /* аккуратный контур */
+  box-shadow: 0 1px 0 rgba(0,0,0,.06) !important;
+}
+
+body.theme-graphite .news-detail .meta [class*="source"] a,
+body.theme-graphite .NewsDetailPage .meta [class*="source"] a,
+body.theme-graphite [data-role="news-detail"] .meta [class*="source"] a {
+  color: #000000 !important;                     /* ссылка источника — чёрная */
+  text-decoration: none !important;
+}
+
+body.theme-graphite .news-detail .meta [class*="date"] svg,
+body.theme-graphite .news-detail .meta [class*="time"] svg,
+body.theme-graphite .news-detail .meta [class*="source"] svg,
+body.theme-graphite .NewsDetailPage .meta [class*="date"] svg,
+body.theme-graphite .NewsDetailPage .meta [class*="time"] svg,
+body.theme-graphite .NewsDetailPage .meta [class*="source"] svg,
+body.theme-graphite [data-role="news-detail"] .meta [class*="date"] svg,
+body.theme-graphite [data-role="news-detail"] .meta [class*="time"] svg,
+body.theme-graphite [data-role="news-detail"] .meta [class*="source"] svg {
+  color: #000000 !important;                      /* иконки — чёрные */
+  fill: currentColor !important;
+  stroke: currentColor !important;
+}
+/* ===================================================================== */
+/* 7.8 ТЁМНАЯ ТЕМА: СУПЕР-ФИКС — дата/время/ИСТОЧНИК строго ЧЁРНЫЕ
+   Перебивает модули и предыдущие блоки (специфичность + порядок). */
+
+body.theme-graphite .news-detail .meta [class*="source"][class*="source"],
+body.theme-graphite .news-detail .meta [class*="date"][class*="date"],
+body.theme-graphite .news-detail .meta [class*="time"][class*="time"],
+body.theme-graphite .NewsDetailPage .meta [class*="source"][class*="source"],
+body.theme-graphite .NewsDetailPage .meta [class*="date"][class*="date"],
+body.theme-graphite .NewsDetailPage .meta [class*="time"][class*="time"],
+body.theme-graphite [data-role="news-detail"] .meta [class*="source"][class*="source"],
+body.theme-graphite [data-role="news-detail"] .meta [class*="date"][class*="date"],
+body.theme-graphite [data-role="news-detail"] .meta [class*="time"][class*="time"] {
+  color: #000 !important;
+  -webkit-text-fill-color: #000 !important;
+}
+
+/* Ссылки источника — чёрные во всех состояниях */
+body.theme-graphite .news-detail .meta [class*="source"][class*="source"] a,
+body.theme-graphite .NewsDetailPage .meta [class*="source"][class*="source"] a,
+body.theme-graphite [data-role="news-detail"] .meta [class*="source"][class*="source"] a,
+body.theme-graphite .news-detail .meta [class*="source"] a:visited,
+body.theme-graphite .NewsDetailPage .meta [class*="source"] a:visited,
+body.theme-graphite [data-role="news-detail"] .meta [class*="source"] a:visited,
+body.theme-graphite .news-detail .meta [class*="source"] a:hover,
+body.theme-graphite .NewsDetailPage .meta [class*="source"] a:hover,
+body.theme-graphite [data-role="news-detail"] .meta [class*="source"] a:hover {
+  color: #000 !important;
+  -webkit-text-fill-color: #000 !important;
+  text-decoration-thickness: 1px;
+}
+
+/* Иконки внутри этих плашек — тоже чёрные */
+body.theme-graphite .news-detail .meta [class*="source"][class*="source"] svg,
+body.theme-graphite .news-detail .meta [class*="date"][class*="date"] svg,
+body.theme-graphite .news-detail .meta [class*="time"][class*="time"] svg,
+body.theme-graphite .NewsDetailPage .meta [class*="source"][class*="source"] svg,
+body.theme-graphite .NewsDetailPage .meta [class*="date"][class*="date"] svg,
+body.theme-graphite .NewsDetailPage .meta [class*="time"][class*="time"] svg,
+body.theme-graphite [data-role="news-detail"] .meta [class*="source"][class*="source"] svg,
+body.theme-graphite [data-role="news-detail"] .meta [class*="date"][class*="date"] svg,
+body.theme-graphite [data-role="news-detail"] .meta [class*="time"][class*="time"] svg {
+  color: #000 !important;
+  fill: currentColor !important;
+  stroke: currentColor !important;
+}
+
+/* На всякий случай — фон и рамка для единообразия (если модуль что-то меняет) */
+body.theme-graphite .news-detail .meta [class*="source"][class*="source"],
+body.theme-graphite .news-detail .meta [class*="date"][class*="date"],
+body.theme-graphite .news-detail .meta [class*="time"][class*="time"],
+body.theme-graphite .NewsDetailPage .meta [class*="source"][class*="source"],
+body.theme-graphite .NewsDetailPage .meta [class*="date"][class*="date"],
+body.theme-graphite .NewsDetailPage .meta [class*="time"][class*="time"],
+body.theme-graphite [data-role="news-detail"] .meta [class*="source"][class*="source"],
+body.theme-graphite [data-role="news-detail"] .meta [class*="date"][class*="date"],
+body.theme-graphite [data-role="news-detail"] .meta [class*="time"][class*="time"] {
+  background: #fff !important;
+  border: 1px solid rgba(0,0,0,.22) !important;
+  box-shadow: 0 1px 0 rgba(0,0,0,.06) !important;
+}
+
+/* ===================== ДОБАВКИ НИЖЕ — НЕ УДАЛЯТЬ ===================== */
+/* 7.9 СВЕТЛАЯ ТЕМА: все H1 (в т.ч. заголовок категории/ленты) — строго ЧЁРНЫЕ */
+:root[data-theme="light"] h1,
+body.theme-white h1,
+.theme-white h1 {
+  color: #000 !important;
+  -webkit-text-fill-color: #000 !important;
+  text-shadow: none !important;
+  opacity: 1 !important;
+}
+
+/* 7.10 ОТКЛЮЧЕНИЕ «БОКОВЫХ ЗАТЕМНЕНИЙ» (фейдов) — безопасный оверрайд */
+body::before, body::after,
+#root::before, #root::after,
+[class*="page"]::before, [class*="page"]::after,
+[class*="layout"]::before, [class*="layout"]::after {
+  content: none !important;
+  display: none !important;
+  background: none !important;
+  box-shadow: none !important;
+  mask-image: none !important;
+}
+
+/* Путь: frontend/src/index.css
+   Назначение: Глобальные темы и стили. ДОБАВЛЕНИЕ:
+   1) Токены для «пилюль» (дата, «Источник» и т.п.)
+   2) Универсальные правила для этих «пилюль», чтобы в тёмной теме фон был графитовый.
+*/
+
+/* === 1) Токены чипов/бейджей (пилюли) ===
+   Светлая тема: остаётся белой.
+   Тёмная (графитовая): делаем графитовый фон + светлый текст. */
+:root,
+body.theme-light {
+  --chip-bg: #ffffff;      /* фон чипа в светлой теме */
+  --chip-fg: #111827;      /* текст в чипе (светлая) */
+  --chip-border: #e5e7eb;  /* рамка (светлая) */
+}
+
+:root[data-theme="graphite"],
+body.theme-graphite {
+  --chip-bg: #2a2f3a;      /* ГРАФИТОВЫЙ фон чипа в тёмной теме */
+  --chip-fg: #f6f7fb;      /* светлый текст на графите */
+  --chip-border: #3a404c;  /* приглушённая графитовая рамка */
+}
+
+/* === 2) Универсальные правила для «пилюль» (дата, Источник, теги) ===
+   Селекторы подобраны так, чтобы не править JSX: берём типичные классы и блоки meta
+   на страницах статей/новостей. */
+.badge,
+.badge-pill,
+.chip,
+.pill,
+.tag,
+[class*="badge"],
+[class*="chip"],
+[class*="pill"],
+/* мета-блоки на странице новости */
+.news-detail .meta a,
+.news-detail .meta span,
+.newsDetail .meta a,
+.newsDetail .meta span,
+.article-page .meta a,
+.article-page .meta span,
+.article .meta a,
+.article .meta span,
+.post .meta a,
+.post .meta span,
+.meta .pill,
+.meta .badge,
+.meta .chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+
+  background: var(--chip-bg, #ffffff);
+  color: var(--chip-fg, #111827);
+  border: 1px solid var(--chip-border, #e5e7eb);
+
+  padding: 8px 14px;
+  border-radius: 9999px;
+  line-height: 1;
+  text-decoration: none;
+  font-weight: 500;
+  transition: background-color .2s ease, color .2s ease, border-color .2s ease;
+}
+
+/* ссылки внутри чипа наследуют цвет и не «синеют» */
+.badge a,
+.badge-pill a,
+.chip a,
+.pill a,
+.tag a,
+.news-detail .meta a,
+.newsDetail .meta a,
+.article-page .meta a,
+.article .meta a,
+.post .meta a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* лёгкий hover */
+.badge:hover,
+.badge-pill:hover,
+.chip:hover,
+.pill:hover,
+.tag:hover,
+.news-detail .meta a:hover,
+.news-detail .meta span:hover,
+.newsDetail .meta a:hover,
+.newsDetail .meta span:hover,
+.article-page .meta a:hover,
+.article-page .meta span:hover,
+.article .meta a:hover,
+.article .meta span:hover,
+.post .meta a:hover,
+.post .meta span:hover {
+  filter: brightness(1.05);
+  border-color: rgba(0,0,0,.12);
+}
+
+/* иконки внутри чипов */
+.badge svg,
+.badge-pill svg,
+.chip svg,
+.pill svg,
+.tag svg,
+.news-detail .meta svg,
+.newsDetail .meta svg,
+.article-page .meta svg,
+.article .meta svg,
+.post .meta svg {
+  width: 16px;
+  height: 16px;
+  opacity: .9;
+  flex: 0 0 auto;
+}
+
+/* На случай, если где-то задан жёсткий белый фон — форсируем графит в тёмной теме */
+:root[data-theme="graphite"] .badge,
+:root[data-theme="graphite"] .badge-pill,
+:root[data-theme="graphite"] .chip,
+:root[data-theme="graphite"] .pill,
+:root[data-theme="graphite"] .tag,
+:root[data-theme="graphite"] .meta a,
+:root[data-theme="graphite"] .meta span,
+body.theme-graphite .badge,
+body.theme-graphite .badge-pill,
+body.theme-graphite .chip,
+body.theme-graphite .pill,
+body.theme-graphite .tag,
+body.theme-graphite .meta a,
+body.theme-graphite .meta span {
+  background: var(--chip-bg) !important;
+  color: var(--chip-fg) !important;
+  border-color: var(--chip-border) !important;
+}
+
+/* ===================================================================== */
+/* 7.11 ТЁМНАЯ ТЕМА: ИТОГОВЫЙ ПАТЧ — «Дата», «Источник» и пр. ПИЛЮЛИ ГРАФИТОВЫЕ
+   (перебивает блоки 7.7 и 7.8; ничего не удаляем). Держать САМЫМ ПОСЛЕДНИМ. */
+body.theme-graphite .news-detail .meta [class*="pill"][class*="pill"],
+body.theme-graphite .news-detail .meta [class*="chip"][class*="chip"],
+body.theme-graphite .news-detail .meta [class*="badge"][class*="badge"],
+body.theme-graphite .news-detail .meta [class*="date"][class*="date"],
+body.theme-graphite .news-detail .meta [class*="time"][class*="time"],
+body.theme-graphite .news-detail .meta [class*="source"][class*="source"],
+body.theme-graphite .NewsDetailPage .meta [class*="pill"][class*="pill"],
+body.theme-graphite .NewsDetailPage .meta [class*="chip"][class*="chip"],
+body.theme-graphite .NewsDetailPage .meta [class*="badge"][class*="badge"],
+body.theme-graphite .NewsDetailPage .meta [class*="date"][class*="date"],
+body.theme-graphite .NewsDetailPage .meta [class*="time"][class*="time"],
+body.theme-graphite .NewsDetailPage .meta [class*="source"][class*="source"],
+body.theme-graphite [data-role="news-detail"] .meta [class*="pill"][class*="pill"],
+body.theme-graphite [data-role="news-detail"] .meta [class*="chip"][class*="chip"],
+body.theme-graphite [data-role="news-detail"] .meta [class*="badge"][class*="badge"],
+body.theme-graphite [data-role="news-detail"] .meta [class*="date"][class*="date"],
+body.theme-graphite [data-role="news-detail"] .meta [class*="time"][class*="time"],
+body.theme-graphite [data-role="news-detail"] .meta [class*="source"][class*="source"] {
+  background-color: var(--graphite-840) !important; /* ГРАФИТОВЫЙ ФОН */
+  color: #f5f7fa !important;                        /* светлый текст */
+  -webkit-text-fill-color: #f5f7fa !important;
+  border: 1px solid var(--graphite-700) !important; /* графитовый контур */
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02) !important;
+}
+
+/* ссылки внутри этих пилюль */
+body.theme-graphite .news-detail .meta [class*="source"][class*="source"] a,
+body.theme-graphite .NewsDetailPage .meta [class*="source"][class*="source"] a,
+body.theme-graphite [data-role="news-detail"] .meta [class*="source"][class*="source"] a {
+  color: #f5f7fa !important;
+  text-decoration: none !important;
+  font-weight: 600;
+}
+body.theme-graphite .news-detail .meta [class*="source"][class*="source"] a:hover,
+body.theme-graphite .NewsDetailPage .meta [class*="source"][class*="source"] a:hover,
+body.theme-graphite [data-role="news-detail"] .meta [class*="source"][class*="source"] a:hover {
+  color: #4da3ff !important;
+  text-decoration: underline !important;
+}
+
+/* иконки внутри — тоже светлые */
+body.theme-graphite .news-detail .meta [class*="pill"][class*="pill"] svg,
+body.theme-graphite .news-detail .meta [class*="chip"][class*="chip"] svg,
+body.theme-graphite .news-detail .meta [class*="badge"][class*="badge"] svg,
+body.theme-graphite .news-detail .meta [class*="date"][class*="date"] svg,
+body.theme-graphite .news-detail .meta [class*="time"][class*="time"] svg,
+body.theme-graphite .news-detail .meta [class*="source"][class*="source"] svg,
+body.theme-graphite .NewsDetailPage .meta [class*="pill"][class*="pill"] svg,
+body.theme-graphite .NewsDetailPage .meta [class*="chip"][class*="chip"] svg,
+body.theme-graphite .NewsDetailPage .meta [class*="badge"][class*="badge"] svg,
+body.theme-graphite .NewsDetailPage .meta [class*="date"][class*="date"] svg,
+body.theme-graphite .NewsDetailPage .meta [class*="time"][class*="time"] svg,
+body.theme-graphite .NewsDetailPage .meta [class*="source"][class*="source"] svg,
+body.theme-graphite [data-role="news-detail"] .meta [class*="pill"][class*="pill"] svg,
+body.theme-graphite [data-role="news-detail"] .meta [class*="chip"][class*="chip"] svg,
+body.theme-graphite [data-role="news-detail"] .meta [class*="badge"][class*="badge"] svg,
+body.theme-graphite [data-role="news-detail"] .meta [class*="date"][class*="date"] svg,
+body.theme-graphite [data-role="news-detail"] .meta [class*="time"][class*="time"] svg,
+body.theme-graphite [data-role="news-detail"] .meta [class*="source"][class*="source"] svg {
+  color: #f5f7fa !important;
+  fill: currentColor !important;
+  stroke: currentColor !important;
+}
+/* ===================================================================== */
+/* 7.12 ТЁМНАЯ ТЕМА: ХАРД-ОВЕРРАЙД ПИЛЮЛЕЙ ДАТЫ/ИСТОЧНИКА В ДЕТАЛЕ НОВОСТИ
+   Цель: даже если классы хешированы (CSS-modules) или есть инлайн-стили,
+   сделать фон графитовым и текст светлым.
+   Держать САМЫМ ПОСЛЕДНИМ в файле. */
+
+body.theme-graphite :where(
+  /* типичные контейнеры деталки */
+  .news-detail, [class*="NewsDetailPage"], [data-role="news-detail"],
+  article, .article, .post
+) :where(
+  /* сами пилюли и элементы мета */
+  [class*="pill"], [class*="chip"], [class*="badge"],
+  [class*="meta"] a, [class*="meta"] span,
+  [class*="date"], [class*="time"], [class*="source"]
+) {
+  background-color: #252c36 !important;     /* графитовый фон */
+  color: #f5f7fa !important;                /* светлый текст */
+  -webkit-text-fill-color: #f5f7fa !important;
+  border: 1px solid #3a4352 !important;     /* графитовый контур */
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.02) !important;
+  border-radius: 9999px !important;         /* «пилюля» на всякий случай */
+}
+
+/* ссылки внутри «Источник» — светлые; hover чуть голубее */
+body.theme-graphite :where(
+  .news-detail, [class*="NewsDetailPage"], [data-role="news-detail"],
+  article, .article, .post
+) :where([class*="source"]) a {
+  color: #f5f7fa !important;
+  text-decoration: none !important;
+  font-weight: 600;
+}
+body.theme-graphite :where(
+  .news-detail, [class*="NewsDetailPage"], [data-role="news-detail"],
+  article, .article, .post
+) :where([class*="source"]) a:hover {
+  color: #4da3ff !important;
+  text-decoration: underline !important;
+}
+
+/* иконки в пилюлях — тоже светлые */
+body.theme-graphite :where(
+  .news-detail, [class*="NewsDetailPage"], [data-role="news-detail"],
+  article, .article, .post
+) :where([class*="pill"], [class*="chip"], [class*="badge"], [class*="date"], [class*="time"], [class*="source"]) svg {
+  color: #f5f7fa !important;
+  fill: currentColor !important;
+  stroke: currentColor !important;
+}
+/* Путь: frontend/src/index.css
+   Назначение: «мягкие» затемнения (градиенты) по краям шапки и футера.
+   Что делаем сейчас: добавляем затемнение ДЛЯ ТЁМНОЙ ТЕМЫ у футера, таким же приёмом, как у хедера.
+   Ничего существующее не удаляем — просто ВСТАВЬ ЭТОТ БЛОК в самый низ index.css (или любого глобального файла стилей, который уже подключён).
+
+   Как это работает:
+   • у футера рисуем ::before — полупрозрачный градиент вверх (top → transparent), создающий «тень» над футером;
+   • у хедера (если ещё нет) можно оставить ::after — градиент вниз.
+   • работает только в тёмной теме: body:not(.theme-white) …
+*/
+
+:root {
+  /* можно подкрутить высоту/интенсивность */
+  --edge-fade-h: 14px;
+  --edge-fade-dark: rgba(0, 0, 0, 0.38);
+  --edge-fade-clear: rgba(0, 0, 0, 0);
+}
+
+/* ===== ТЁМНАЯ ТЕМА: ЗАТЕМНЕНИЕ ФУТЕРА (как у хедера) ===== */
+body:not(.theme-white) footer,
+body:not(.theme-white) .site-footer,
+body.theme-dark footer,
+body.theme-dark .site-footer {
+  position: relative;      /* чтобы ::before позиционировался относительно футера */
+  z-index: 1;              /* поверх соседнего контента */
+  overflow: visible;       /* важно: не прячем псевдоэлемент, если кто-то включил overflow */
+}
+
+body:not(.theme-white) footer::before,
+body:not(.theme-white) .site-footer::before,
+body.theme-dark footer::before,
+body.theme-dark .site-footer::before {
+  content: "";
+  position: absolute;
+  left: 0; right: 0;
+  top: -1px;                          /* наезжаем на контент выше футера на 1px */
+  height: var(--edge-fade-h);
+  pointer-events: none;
+  z-index: 2;
+  background: linear-gradient(
+    to top,
+    var(--edge-fade-dark),
+    var(--edge-fade-clear)
+  );
+  /* чуть мягче вид: можно отключить, если не нравится */
+  filter: saturate(110%);
+}
+
+/* ===== (опционально) ТЁМНАЯ ТЕМА: «тень/шторка» у хедера (ТОЛЬКО для тёмной/графитовой) =====
+   FIX: раньше было body:not(.theme-white) — и в theme-light появлялась серая полоса.
+   Теперь шторка включается только в theme-graphite / theme-dark / data-theme="graphite".
+*/
+
+/* Хедер “готовится” к псевдо-элементу только в тёмной теме */
+body.theme-graphite header,
+body.theme-graphite .site-header,
+.theme-graphite header,
+.theme-graphite .site-header,
+html.theme-graphite header,
+html.theme-graphite .site-header,
+body[data-theme="graphite"] header,
+body[data-theme="graphite"] .site-header,
+html[data-theme="graphite"] header,
+html[data-theme="graphite"] .site-header,
+body.theme-dark header,
+body.theme-dark .site-header {
+  position: relative;
+  z-index: 5;
+}
+
+/* Псевдо-элемент (градиентная “шторка”) — только для тёмной темы */
+body.theme-graphite header::after,
+body.theme-graphite .site-header::after,
+.theme-graphite header::after,
+.theme-graphite .site-header::after,
+html.theme-graphite header::after,
+html.theme-graphite .site-header::after,
+body[data-theme="graphite"] header::after,
+body[data-theme="graphite"] .site-header::after,
+html[data-theme="graphite"] header::after,
+html[data-theme="graphite"] .site-header::after,
+body.theme-dark header::after,
+body.theme-dark .site-header::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;                       /* наезжаем на контент под шапкой */
+  height: var(--edge-fade-h);
+  pointer-events: none;
+  z-index: 6;
+  background: linear-gradient(
+    to bottom,
+    var(--edge-fade-dark),
+    var(--edge-fade-clear)
+  );
+}
+/* =========================================================
+   FIX (2026-01-03): убираем полосу под шапкой в БЕЛОЙ/СВЕТЛОЙ теме
+   ========================================================= */
+body.theme-white header::after,
+body.theme-white .site-header::after,
+body.theme-light header::after,
+body.theme-light .site-header::after,
+.theme-white header::after,
+.theme-white .site-header::after,
+.theme-light header::after,
+.theme-light .site-header::after,
+body[data-theme="white"] header::after,
+body[data-theme="white"] .site-header::after,
+body[data-theme="light"] header::after,
+body[data-theme="light"] .site-header::after,
+html[data-theme="white"] header::after,
+html[data-theme="white"] .site-header::after,
+html[data-theme="light"] header::after,
+html[data-theme="light"] .site-header::after,
+html.theme-white header::after,
+html.theme-white .site-header::after,
+html.theme-light header::after,
+html.theme-light .site-header::after {
+  content: none !important;
+  background: none !important;
+  height: 0 !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+
+/* ===== Белая тема — на всякий случай более лёгкие тени (можно удалить, если не нужно) ===== */
+body.theme-white footer::before,
+body.theme-white .site-footer::before {
+  background: linear-gradient(to top, rgba(0,0,0,0.12), rgba(0,0,0,0));
+}
+body.theme-white header::after,
+body.theme-white .site-header::after {
+  background: linear-gradient(to bottom, rgba(0,0,0,0.10), rgba(0,0,0,0));
+}
+/* Путь: frontend/src/index.css
+   Назначение: «мягкая тень» у низа экрана в тёмной теме (видна поверх контента и над футером).
+   НИЧЕГО НЕ УДАЛЯЕМ. Просто вставь блок в самый низ index.css.
+*/
+
+/* Вариант №1 — моментальный фикс: фиксированный градиент у низа в тёмной теме */
+:root {
+  --edge-fade-h: 14px;
+}
+body:not(.theme-white)::after {
+  content: "";
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  height: var(--edge-fade-h);
+  pointer-events: none;
+  z-index: 1000; /* ниже всплывашек поиска (у них огромный z-index), но поверх контента */
+  background: linear-gradient(to top, rgba(0,0,0,0.38), rgba(0,0,0,0));
+}
+
+/* Вариант №2 — тень «привязана» именно к футеру (на случай, если хочешь как у хедера) */
+/* Широкий селектор, чтобы поймать модульные классы: footer, .site-footer, [class*="footer"], [class*="Footer"] */
+body:not(.theme-white) :is(footer, .site-footer, [class*="footer"], [class*="Footer"]) {
+  position: relative !important;
+  z-index: 1;
+  overflow: visible;
+}
+body:not(.theme-white) :is(footer, .site-footer, [class*="footer"], [class*="Footer"])::before {
+  content: "";
+  position: absolute;
+  left: 0; right: 0;
+  top: -1px;
+  height: var(--edge-fade-h);
+  pointer-events: none;
+  z-index: 2;
+  background: linear-gradient(to top, rgba(0,0,0,0.38), rgba(0,0,0,0));
+}
+/* Путь: frontend/src/index.css
+   Назначение: ВОССТАНОВЛЕНИЕ нижнего затемнения в тёмной теме.
+   Причина: выше в файле есть блок, который отключает body::before/::after (content:none !important).
+   Решение: переопределяем его ПOСЛЕ — с !important. Ничего не удаляем. */
+
+/* 1) Фиксированный фейд у низа экрана (всегда виден в тёмной теме) */
+:root { --edge-fade-h: 14px; }
+body:not(.theme-white)::after {
+  content: "" !important;                    /* переобнуляем отключение из 7.10 */
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  height: var(--edge-fade-h);
+  pointer-events: none;
+  /* держим ниже всплывающих окон поиска с огромными z-index, но выше контента */
+  z-index: 2147483000;
+  background: linear-gradient(to top, rgba(0,0,0,0.38), rgba(0,0,0,0)) !important;
+}
+
+/* 2) Тень «как у хедера», приклеенная к футеру */
+body:not(.theme-white) :is(footer, .site-footer, [class*="footer"], [class*="Footer"]) {
+  position: relative !important;
+  z-index: 1;
+  overflow: visible;
+}
+body:not(.theme-white) :is(footer, .site-footer, [class*="footer"], [class*="Footer"])::before {
+  content: "" !important;                    /* перебиваем возможные глобальные сбросы */
+  position: absolute;
+  left: 0; right: 0;
+  top: -1px;
+  height: var(--edge-fade-h);
+  pointer-events: none;
+  z-index: 2;
+  background: linear-gradient(to top, rgba(0,0,0,0.38), rgba(0,0,0,0)) !important;
+}
+/* Путь: frontend/src/index.css
+   Назначение: Чистый фейд у футера в тёмной теме без «двойных полос».
+   ВСТАВИТЬ В САМЫЙ НИЗ ФАЙЛА. Ничего выше не трогаем. */
+
+/* 0) Отключаем глобальный фиксированный фейд экрана, который даёт дублирование */
+body:not(.theme-white)::after {
+  content: none !important;
+  background: none !important;
+}
+
+/* 1) Тень «как у хедера», но у футера (вверх на контент) */
+:root { --edge-fade-h: 16px; }
+
+body:not(.theme-white) :is(footer, .site-footer, [class*="footer"], [class*="Footer"], [data-role="footer"]) {
+  position: relative !important;
+  z-index: 2;               /* выше контента, ниже попапов */
+  overflow: visible;
+  /* на всякий пожарный — фон футера из токенов тёмной темы */
+  background: var(--graphite-900, #1e242d);
+}
+
+body:not(.theme-white) :is(footer, .site-footer, [class*="footer"], [class*="Footer"], [data-role="footer"])::before {
+  content: "" !important;
+  position: absolute;
+  left: 0; right: 0;
+  top: -1px;                      /* чуть залезаем над футером */
+  height: var(--edge-fade-h);
+  pointer-events: none;
+  z-index: 3;
+  background: linear-gradient(to top, rgba(0,0,0,0.30), rgba(0,0,0,0)) !important;
+}
+
+/* 2) Если хочется совсем мягко — можно добавить лёгкую внутреннюю тень (необязательно) */
+body:not(.theme-white) :is(footer, .site-footer, [class*="footer"], [class*="Footer"], [data-role="footer"]) {
+  box-shadow: inset 0 10px 18px rgba(0,0,0,0.20);
+}
+/* Путь: frontend/src/index.css
+   Назначение: ТЁМНАЯ ТЕМА — футер полностью затемнён (без полос).
+   ВСТАВЬ в самый низ файла. Ничего не удаляем выше. */
+
+/* Токен прозрачности затемнения (можно усилить до .40) */
+:root { --footer-overlay: rgba(0, 0, 0, 0.32); }
+
+/* 0) На всякий случай — убираем глобальный фикс-фейд низа экрана, чтобы не делал «вторую полосу» */
+body:not(.theme-white)::after {
+  content: none !important;
+  background: none !important;
+}
+
+/* 1) Сам футер: цельный затемнённый фон одной плитой */
+body:not(.theme-white) :is(footer, .site-footer, [class*="footer"], [class*="Footer"], [data-role="footer"]) {
+  /* базовый графитовый фон ПЛЮС равномерное затемнение поверх */
+  background:
+    linear-gradient(var(--footer-overlay), var(--footer-overlay)),
+    var(--graphite-900, #1e242d) !important;
+
+  color: var(--app-text, #f5f7fa);
+  border-top: 1px solid var(--graphite-800, #2a313c) !important;
+
+  /* чтобы наше оформление не перебивалось внутренними позиционированными блоками */
+  position: relative !important;
+  z-index: 2;
+  overflow: visible;
+}
+
+/* 2) Убираем старый «фейд-бортик» у футера (если добавляли ранее) */
+body:not(.theme-white) :is(footer, .site-footer, [class*="footer"], [class*="Footer"], [data-role="footer"])::before {
+  content: none !important;
+  background: none !important;
+}
+
+/* 3) Если внутри футера есть собственные фоны у контейнеров — делаем их прозрачными,
+      чтобы не было светлых/тёмных полос. Список селекторов — мягкий, только типичные блоки. */
+body:not(.theme-white) :is(footer, .site-footer, [class*="footer"], [class*="Footer"], [data-role="footer"])
+  :is(.container, .container-fluid, .row, .links, .menu, nav, ul, .footer-top, .footer-bottom) {
+  background: transparent !important;
+  border-color: inherit !important;
+}
+
+/* 4) Тонкая внутренняя тень сверху — чисто для отделения футера от контента (по желанию) */
+body:not(.theme-white) :is(footer, .site-footer, [class*="footer"], [class*="Footer"], [data-role="footer"]) {
+  box-shadow: inset 0 10px 18px rgba(0,0,0,0.22);
+}
+/* Путь: frontend/src/index.css
+   Назначение: Светлая тема — мягкие затемнения у ШАПКИ и ФУТЕРА, как у боковых виньеток.
+   ВСТАВИТЬ В САМЫЙ НИЗ ФАЙЛА. Ничего существующее не удаляем.
+*/
+
+:root {
+  /* высота «шторки» по краю */
+  --edge-fade-h: 14px;
+  /* интенсивность для светлой темы */
+  --edge-fade-light: rgba(0,0,0,0.10);
+  --edge-side-light: rgba(0,0,0,0.06);
+}
+
+/* ───────────────────────────────────────────────────────────── */
+/* ХЕДЕР (светлая тема): нижняя шторка + боковые дымки без псевдоэлементов */
+body.theme-white :is(header, .site-header) {
+  position: relative;
+  z-index: 5;
+  /* мягкие боковые «дымы» как у сайдбаров */
+  box-shadow:
+    inset 22px 0 26px -22px var(--edge-side-light),
+    inset -22px 0 26px -22px var(--edge-side-light);
+}
+
+/* нижняя шторка у хедера (вниз) — перебивает глобальные сбросы */
+body.theme-white :is(header, .site-header)::after {
+  content: "" !important;
+  position: absolute;
+  left: 0; right: 0; bottom: -1px;
+  height: var(--edge-fade-h);
+  pointer-events: none;
+  z-index: 6;
+  background: linear-gradient(to bottom, var(--edge-fade-light), rgba(0,0,0,0)) !important;
+}
+
+/* ───────────────────────────────────────────────────────────── */
+/* ФУТЕР (светлая тема): верхняя шторка + боковые дымки */
+body.theme-white :is(footer, .site-footer, [data-role="footer"]) {
+  position: relative;
+  z-index: 3;
+  /* боковые дымки — тот же приём, что и для хедера */
+  box-shadow:
+    inset 22px 0 26px -22px var(--edge-side-light),
+    inset -22px 0 26px -22px var(--edge-side-light);
+}
+
+/* верхняя шторка у футера (вверх) — перебивает глобальные сбросы */
+body.theme-white :is(footer, .site-footer, [data-role="footer"])::before {
+  content: "" !important;
+  position: absolute;
+  left: 0; right: 0; top: -1px;
+  height: var(--edge-fade-h);
+  pointer-events: none;
+  z-index: 4;
+  background: linear-gradient(to top, var(--edge-fade-light), rgba(0,0,0,0)) !important;
+}
+/* Путь: frontend/src/index.css
+   Назначение: Светлая тема — мягкие затемнения у Хедера и Футера (нижняя/верхняя шторки + боковые «дымки»).
+   ВСТАВИТЬ В САМЫЙ НИЗ ФАЙЛА. Ничего не удаляем.
+*/
+
+/* Токены интенсивности для светлой темы */
+:root {
+  --edge-fade-h: 14px;                    /* высота шторки */
+  --edge-fade-light: rgba(0,0,0,0.10);    /* центр (вниз/вверх) */
+  --edge-side-light: rgba(0,0,0,0.06);    /* боковые дымки */
+}
+
+/* ─────────────────────────────────────────────── */
+/* ХЕДЕР: шторка вниз + боковые дымки */
+body.theme-white :is(header, .site-header) {
+  position: relative;
+  z-index: 5;
+  background: #fff;                       /* гарантируем белый фон шапки */
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+
+  /* боковые «виньетки» без псевдоэлементов */
+  box-shadow:
+    inset 24px 0 28px -24px var(--edge-side-light),
+    inset -24px 0 28px -24px var(--edge-side-light);
+}
+
+/* нижняя шторка у хедера — перебиваем любые глобальные сбросы */
+body.theme-white :is(header, .site-header)::after {
+  content: "" !important;
+  position: absolute;
+  left: 0; right: 0; bottom: -1px;
+  height: var(--edge-fade-h);
+  pointer-events: none;
+  z-index: 6;
+  background: linear-gradient(
+    to bottom,
+    var(--edge-fade-light),
+    rgba(0,0,0,0)
+  ) !important;
+}
+
+/* ─────────────────────────────────────────────── */
+/* ФУТЕР: шторка вверх + боковые дымки */
+body.theme-white :is(footer, .site-footer, [data-role="footer"]) {
+  position: relative;
+  z-index: 3;
+  background: #fff;                       /* ровный белый */
+  border-top: 1px solid rgba(0,0,0,0.08);
+
+  /* боковые «виньетки» */
+  box-shadow:
+    inset 24px 0 28px -24px var(--edge-side-light),
+    inset -24px 0 28px -24px var(--edge-side-light);
+}
+
+/* верхняя шторка у футера */
+body.theme-white :is(footer, .site-footer, [data-role="footer"])::before {
+  content: "" !important;
+  position: absolute;
+  left: 0; right: 0; top: -1px;
+  height: var(--edge-fade-h);
+  pointer-events: none;
+  z-index: 4;
+  background: linear-gradient(
+    to top,
+    var(--edge-fade-light),
+    rgba(0,0,0,0)
+  ) !important;
+}
+
+/* На всякий случай гасим любые старые фикс-фейды, если они ещё включены */
+body.theme-white::after { content: none !important; background: none !important; }
+
+/* Если какие-то вложенные контейнеры в футере имеют свой «серый» фон — обнулим его, чтобы тень была гладкой */
+body.theme-white :is(footer, .site-footer, [data-role="footer"])
+  :is(.container, .container-fluid, .row, .footer-top, .footer-bottom, nav, ul) {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* ===================================================================== */
+/* === 11) ГЛОБАЛЬНЫЙ ФИКС ГОРИЗОНТАЛЬНОГО СКРОЛЛА (append-only) ===
+   Ограничиваем ширину документа и отключаем горизонтальную прокрутку,
+   чтобы сайт не «уезжал» за пределы экрана на мобильных и десктопе. */
+
+html,
+body,
+#root {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Медиа-элементы не должны раздвигать вёрстку */
+img,
+video,
+canvas {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ===================================================================== */
+/* === 12) FIX v2025-12-20: ПЕРВЫЙ РЕНДЕР — ПЛАШКИ ДАТА/ИСТОЧНИК НЕ ДОЛЖНЫ БЫТЬ "БЕЛЫЙ НА БЕЛОМ" ===
+   Симптом: при первом входе в тёмной теме текст на плашках белый и не видно.
+   После переключения темы туда-сюда становится нормально (значит, где-то тема/состояние применяется поздно).
+   Решение: самый последний хард-оверрайд для тёмной темы (и для случая, когда тема ещё не успела доклеиться).
+   Ничего выше не удаляем, это просто «последнее слово» CSS.
+*/
+
+/* Поддерживаем и вариант с классом на html, и на body */
+html.theme-graphite,
+body.theme-graphite,
+.theme-graphite {
+  --meta-pill-bg-final: #ffffff;
+  --meta-pill-text-final: #000000;
+  --meta-pill-border-final: rgba(0,0,0,0.22);
+}
+
+/* 1) Сами пилюли/чипы/бейджи/дата/время/источник — светлый фон + чёрный текст */
+html.theme-graphite :where(.news-detail, [class*="NewsDetailPage"], .NewsDetailPage, [data-role="news-detail"], article, .article, .post)
+  :where([class*="pill"], [class*="chip"], [class*="badge"], [class*="date"], [class*="time"], [class*="source"]),
+body.theme-graphite :where(.news-detail, [class*="NewsDetailPage"], .NewsDetailPage, [data-role="news-detail"], article, .article, .post)
+  :where([class*="pill"], [class*="chip"], [class*="badge"], [class*="date"], [class*="time"], [class*="source"]) {
+  background: var(--meta-pill-bg-final) !important;
+  color: var(--meta-pill-text-final) !important;
+  -webkit-text-fill-color: var(--meta-pill-text-final) !important;
+  border: 1px solid var(--meta-pill-border-final) !important;
+  box-shadow: 0 1px 0 rgba(0,0,0,.06) !important;
+}
+
+/* 2) Текст/ссылки внутри «Источник» — тоже чёрные */
+html.theme-graphite :where(.news-detail, [class*="NewsDetailPage"], .NewsDetailPage, [data-role="news-detail"], article, .article, .post)
+  :where([class*="source"]) :where(a, a:visited, a:hover),
+body.theme-graphite :where(.news-detail, [class*="NewsDetailPage"], .NewsDetailPage, [data-role="news-detail"], article, .article, .post)
+  :where([class*="source"]) :where(a, a:visited, a:hover) {
+  color: var(--meta-pill-text-final) !important;
+  -webkit-text-fill-color: var(--meta-pill-text-final) !important;
+  text-decoration: none !important;
+}
+
+/* 3) Иконки внутри этих плашек — чёрные */
+html.theme-graphite :where(.news-detail, [class*="NewsDetailPage"], .NewsDetailPage, [data-role="news-detail"], article, .article, .post)
+  :where([class*="pill"], [class*="chip"], [class*="badge"], [class*="date"], [class*="time"], [class*="source"]) svg,
+body.theme-graphite :where(.news-detail, [class*="NewsDetailPage"], .NewsDetailPage, [data-role="news-detail"], article, .article, .post)
+  :where([class*="pill"], [class*="chip"], [class*="badge"], [class*="date"], [class*="time"], [class*="source"]) svg {
+  color: var(--meta-pill-text-final) !important;
+  fill: currentColor !important;
+  stroke: currentColor !important;
+}
+/* Путь: frontend/src/index.css
+   Назначение: глобальные стили приложения.
+   FIX v2025-12-21:
+   ✅ В тёмной теме заголовок (h1) на детальной новости был чёрным.
+   ✅ Принудительно задаём цвет заголовка внутри .news-detail.
+*/
+
+body.theme-graphite .news-detail h1,
+body.theme-graphite .NewsDetailPage h1,
+body.theme-graphite [data-role="news-detail"] h1 {
+  color: var(--app-text) !important;
+}
+
+
+/* ===================================================================== */
+/* FIX v2025-12-26: ДЕТАЛЬНАЯ НОВОСТЬ — ЦВЕТ H1 В ЗАВИСИМОСТИ ОТ ТЕМЫ
+   Ситуация: на проде в тёмной теме заголовок мог становиться чёрным из-за CSS-модулей/инлайн-стилей.
+   Решение: даём "последнее слово" максимально специфичными селекторами + -webkit-text-fill-color. */
+
+/* 1) ТЁМНАЯ/ГРАФИТОВАЯ ТЕМА: H1 строго СВЕТЛЫЙ */
+html.theme-graphite .news-detail h1,
+html.theme-graphite .NewsDetailPage h1,
+html.theme-graphite [data-role="news-detail"] h1,
+body.theme-graphite .news-detail h1,
+body.theme-graphite .NewsDetailPage h1,
+body.theme-graphite [data-role="news-detail"] h1,
+.theme-graphite .news-detail h1,
+.theme-graphite .NewsDetailPage h1,
+.theme-graphite [data-role="news-detail"] h1,
+body.theme-graphite .news-detail h1.news-detail__title,
+body.theme-graphite .news-detail h1[class*="title"],
+body.theme-graphite .NewsDetailPage h1[class*="title"],
+body.theme-graphite [data-role="news-detail"] h1[class*="title"] {
+  color: var(--app-text, #f5f7fa) !important;
+  -webkit-text-fill-color: var(--app-text, #f5f7fa) !important; /* перебивает text-fill из модулей */
+  text-shadow: none !important;
+  opacity: 1 !important;
+}
+
+/* 2) БЕЛАЯ ТЕМА: H1 строго ЧЁРНЫЙ */
+html.theme-white .news-detail h1,
+html.theme-white .NewsDetailPage h1,
+html.theme-white [data-role="news-detail"] h1,
+body.theme-white .news-detail h1,
+body.theme-white .NewsDetailPage h1,
+body.theme-white [data-role="news-detail"] h1,
+.theme-white .news-detail h1,
+.theme-white .NewsDetailPage h1,
+.theme-white [data-role="news-detail"] h1,
+body.theme-white .news-detail h1.news-detail__title,
+body.theme-white .news-detail h1[class*="title"],
+body.theme-white .NewsDetailPage h1[class*="title"],
+body.theme-white [data-role="news-detail"] h1[class*="title"] {
+  color: #000000 !important;
+  -webkit-text-fill-color: #000000 !important;
+  text-shadow: none !important;
+  opacity: 1 !important;
+}
+/* === FIX (2026-01-04): Заголовки в тёмной теме не должны быть чёрными ===
+   Причина: где-то на h1/h2 может висеть text-black / text-slate-900 (Tailwind) или жёсткий color.
+   Решение: все заголовки следуют переменной темы --app-text,
+   а в graphite теме дополнительно перебиваем любые "чёрные" классы через !important.
+*/
+
+body {
+  color: var(--app-text);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--app-text);
+}
+
+/* тёмная (graphite) — перебить любые text-black/text-slate-900 и т.п. */
+body.theme-graphite h1,
+body.theme-graphite h2,
+body.theme-graphite h3,
+body.theme-graphite h4,
+body.theme-graphite h5,
+body.theme-graphite h6 {
+  color: var(--app-text) !important;
+}
+/* --- IzotovLife FIX: чтобы лента/карточки не обрезались под fixed navbar --- */
+/* Путь: frontend/src/index.css
+   Назначение: глобальный отступ под фиксированную шапку.
+   Navbar.js выставляет --navbar-offset автоматически по реальной высоте шапки.
+*/
+
+:root {
+  /* запасное значение, если JS ещё не успел измерить */
+  --navbar-offset: 132px;
+}
+
+/* Включаем отступ только когда Navbar смонтирован */
+body.has-navbar {
+  padding-top: var(--navbar-offset);
+}
+
+/* Чтобы якоря/переходы не прятались под шапкой */
+html {
+  scroll-padding-top: var(--navbar-offset);
+}
+
+/* На всякий случай для элементов с якорями */
+[id] {
+  scroll-margin-top: calc(var(--navbar-offset) + 12px);
+}
+/* === IzotovLife FIX: cross-browser text scaling (append to end) === */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}

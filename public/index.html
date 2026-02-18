@@ -1,43 +1,277 @@
+<!-- Путь: frontend/public/index.html
+     Назначение: Базовый HTML-шаблон React-приложения IzotovLife с дефолтными SEO-тегами.
+     FIX:
+       ✅ Google tag (gtag.js) находится внутри <head> сразу после открытия <head>.
+       ✅ Раннее применение темы (до первой отрисовки).
+       ✅ Базовые SEO fallback теги.
+       ✅ Яндекс.Метрика.
+     DIAG (2026-01-06):
+       ✅ Добавлен аварийный вывод JS-ошибок прямо на странице (помогает поймать причину "белого экрана").
+       ⚠️ После того как найдём и исправим ошибку — DIAG можно удалить.
+
+     FIX 2026-02-01-AUTHOR-PROOF-META:
+       ✅ Добавлены "пустые" meta property="article:*" (published_time/modified_time/author).
+       Зачем:
+         - backend/views_spa.py уже умеет подставлять article:published_time / article:modified_time / article:author
+           через _replace_meta_by_property(...), но в build/index.html этих meta не было.
+         - Без этих заглушек replace-функция не находила, что заменить, поэтому мета-теги не появлялись на страницах статей.
+       Важно:
+         - Эти значения будут подставляться сервером ТОЛЬКО на детальных страницах статей, где meta известны.
+-->
+
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
   <head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-S04DMRLPHY"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-S04DMRLPHY');
+    </script>
+    <!-- /Google tag (gtag.js) -->
+
     <meta charset="utf-8" />
     <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#000000" />
+
+    <!-- =========================================================
+         FIX: РАННЕЕ ПРИМЕНЕНИЕ ТЕМЫ (до первой отрисовки)
+         Причина бага:
+           - в проекте встречаются оба названия светлой темы: theme-white и theme-light
+           - если при первом рендере стоит "не тот" класс, CSS-переменные берутся из :root (графит),
+             и текст получается почти белый на белом фоне
+         Решение:
+           - на светлой теме ставим СРАЗУ ДВА алиаса: theme-white и theme-light (и на html, и на body)
+           - на тёмной теме ставим theme-graphite (и алиас theme-dark — на всякий случай)
+           - ставим наблюдатель, который НЕ ДАЁТ компонентам случайно убрать алиасы
+         ========================================================= -->
+    <script>
+      (function () {
+        try {
+          var raw =
+            localStorage.getItem("themeMode") ||
+            localStorage.getItem("theme") ||
+            localStorage.getItem("izotovlife_theme") ||
+            "";
+
+          raw = String(raw || "").toLowerCase();
+
+          // dark, graphite, black, "тёмн..."
+          var isDark = /graphite|dark|black|темн/.test(raw);
+
+          var root = document.documentElement;
+
+          var DARK1 = "theme-graphite";
+          var DARK2 = "theme-dark";
+          var LIGHT1 = "theme-white";
+          var LIGHT2 = "theme-light";
+
+          function normalizeAliases(el) {
+            if (!el || !el.classList) return;
+            var c = el.classList;
+
+            // Светлая тема: держим оба алиаса
+            if (c.contains(LIGHT1) && !c.contains(LIGHT2)) c.add(LIGHT2);
+            if (c.contains(LIGHT2) && !c.contains(LIGHT1)) c.add(LIGHT1);
+
+            // Тёмная тема: держим оба алиаса
+            if (c.contains(DARK1) && !c.contains(DARK2)) c.add(DARK2);
+            if (c.contains(DARK2) && !c.contains(DARK1)) c.add(DARK1);
+          }
+
+          function applyTheme(el) {
+            if (!el || !el.classList) return;
+
+            // Снимаем все известные варианты — чтобы не накапливались классы
+            el.classList.remove(DARK1, DARK2, LIGHT1, LIGHT2);
+
+            if (isDark) {
+              el.classList.add(DARK1);
+              el.classList.add(DARK2); // алиас
+            } else {
+              el.classList.add(LIGHT1);
+              el.classList.add(LIGHT2); // алиас
+            }
+
+            normalizeAliases(el);
+          }
+
+          applyTheme(root);
+
+          // data-theme используют некоторые CSS-правила и часть компонентов
+          root.setAttribute("data-theme", isDark ? "graphite" : "light");
+          root.style.colorScheme = isDark ? "dark" : "light";
+
+          // body появляется позже — применяем, как только он будет доступен
+          (function syncBody() {
+            if (!document.body) {
+              requestAnimationFrame(syncBody);
+              return;
+            }
+            applyTheme(document.body);
+
+            // Наблюдатель: если React/компоненты "переименуют" тему, вернём алиасы обратно
+            try {
+              var mo = new MutationObserver(function (list) {
+                for (var i = 0; i < list.length; i++) {
+                  if (list[i].attributeName === "class") {
+                    normalizeAliases(root);
+                    normalizeAliases(document.body);
+                  }
+                }
+              });
+              mo.observe(root, { attributes: true, attributeFilter: ["class"] });
+              mo.observe(document.body, { attributes: true, attributeFilter: ["class"] });
+            } catch (e) {}
+          })();
+        } catch (e) {}
+      })();
+    </script>
+
+    <!-- БАЗОВОЕ SEO (FALLBACK) -->
     <meta
       name="description"
-      content="Web site created using create-react-app"
+      content="IzotovLife — новостной агрегатор: свежие новости России и мира, удобная лента и рубрики."
     />
+    <meta
+      name="keywords"
+      content="изотов, изотовлайф, изотов лайф, новости, свежие новости, новости сегодня, Россия новости, мировые новости, политика, экономика, общество, происшествия, технологии, наука, спорт, культура, агрегатор новостей, izotovlife"
+    />
+    <meta name="author" content="IzotovLife.ru" />
+    <meta name="robots" content="index, follow" />
+
+    <!-- =========================================================
+         FIX 2026-02-01-AUTHOR-PROOF-META:
+         Заглушки для "article:*". Django (backend/views_spa.py) подменяет content на детальных страницах статей.
+         Важно: если этих тегов нет в build/index.html, _replace_meta_by_property(...) не сможет их заменить.
+         ========================================================= -->
+    <meta property="article:published_time" content="" />
+    <meta property="article:modified_time" content="" />
+    <meta property="article:author" content="" />
+    <!-- ========================================================= -->
+
+    <!-- Open Graph для соцсетей (FALLBACK) -->
+    <meta property="og:title" content="IzotovLife — свежие новости из разных источников" />
+    <meta
+      property="og:description"
+      content="IzotovLife — новостной агрегатор: свежие новости России и мира, удобная лента и рубрики."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://izotovlife.ru/" />
+    <meta property="og:image" content="https://izotovlife.ru/logo512.png" />
+
+    <!-- Twitter Card (FALLBACK) -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="IzotovLife — агрегатор новостей" />
+    <meta
+      name="twitter:description"
+      content="IzotovLife — новостной агрегатор: свежие новости России и мира, удобная лента и рубрики."
+    />
+    <meta name="twitter:image" content="https://izotovlife.ru/logo512.png" />
+
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
-    <!--
-      manifest.json provides metadata used when your web app is installed on a
-      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
-    -->
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <!--
-      Notice the use of %PUBLIC_URL% in the tags above.
-      It will be replaced with the URL of the `public` folder during the build.
-      Only files inside the `public` folder can be referenced from the HTML.
 
-      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
-      work correctly both with client-side routing and a non-root public URL.
-      Learn how to configure a non-root public URL by running `npm run build`.
-    -->
-    <title>React App</title>
+    <title>IzotovLife — свежие новости из всех источников</title>
+
+    <!-- === Yandex.Metrika counter === -->
+    <script type="text/javascript">
+      (function (m, e, t, r, i, k, a) {
+        m[i] =
+          m[i] ||
+          function () {
+            (m[i].a = m[i].a || []).push(arguments);
+          };
+        m[i].l = 1 * new Date();
+        for (var j = 0; j < document.scripts.length; j++) {
+          if (document.scripts[j].src === r) {
+            return;
+          }
+        }
+        k = e.createElement(t);
+        a = e.getElementsByTagName(t)[0];
+        k.async = 1;
+        k.src = r;
+        a.parentNode.insertBefore(k, a);
+      })(
+        window,
+        document,
+        "script",
+        "https://mc.yandex.ru/metrika/tag.js",
+        "ym"
+      );
+
+      ym(69166312, "init", {
+        webvisor: true,
+        clickmap: true,
+        accurateTrackBounce: true,
+        trackLinks: true,
+      });
+    </script>
+    <noscript>
+      <div>
+        <img
+          src="https://mc.yandex.ru/watch/69166312"
+          style="position:absolute; left:-9999px;"
+          alt=""
+        />
+      </div>
+    </noscript>
+    <!-- === /Yandex.Metrika counter === -->
   </head>
+
   <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
+    <noscript>Для работы сайта IzotovLife нужен включённый JavaScript.</noscript>
     <div id="root"></div>
-    <!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
 
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
+    <!-- DIAG (IzotovLife): покажет JS-ошибки прямо на странице, если React падает -->
+    <script>
+      (function () {
+        function show(msg) {
+          try {
+            var el = document.createElement("pre");
+            el.style.cssText =
+              "position:relative;z-index:999999;max-width:1100px;margin:18px auto;padding:14px;border-radius:12px;" +
+              "background:#111;color:#fff;white-space:pre-wrap;word-break:break-word;" +
+              "font:13px/1.4 ui-monospace,Menlo,Consolas,monospace;box-shadow:0 10px 30px rgba(0,0,0,.35);";
+            el.textContent = msg;
+            document.body.appendChild(el);
+          } catch (e) {}
+        }
 
-      To begin the development, run `npm start` or `yarn start`.
-      To create a production bundle, use `npm run build` or `yarn build`.
-    -->
+        window.addEventListener("error", function (e) {
+          var msg =
+            "JS ERROR:\n" +
+            (e && e.message ? e.message : "unknown") +
+            "\n\n" +
+            (e && e.filename ? e.filename : "") +
+            (e && e.lineno ? ":" + e.lineno : "") +
+            (e && e.colno ? ":" + e.colno : "");
+          show(msg);
+        });
+
+        window.addEventListener("unhandledrejection", function (e) {
+          show("UNHANDLED PROMISE:\n" + (e && e.reason ? String(e.reason) : "unknown"));
+        });
+
+        setTimeout(function () {
+          var root = document.getElementById("root");
+          if (root && root.children && root.children.length === 0) {
+            show(
+              "React не нарисовал интерфейс.\n" +
+                "Причины обычно такие:\n" +
+                "• ошибка в рантайме (см. выше)\n" +
+                "• компонент упал при инициализации\n" +
+                "• редирект/guard вернул пусто\n\n" +
+                "Открой DevTools → Console для деталей."
+            );
+          }
+        }, 4000);
+      })();
+    </script>
+    <!-- /DIAG -->
   </body>
 </html>

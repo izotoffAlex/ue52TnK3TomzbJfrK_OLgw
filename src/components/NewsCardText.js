@@ -1,32 +1,37 @@
 // frontend/src/components/NewsCardText.js
-// Назначение: Текстовая карточка новости (для статей и RSS).
-// Путь: frontend/src/components/NewsCardText.js
+// Назначение: Текстовая карточка новости (для статей и RSS),
+// визуально и по размерам согласована с NewsCardImage/NewsCard.
 
 import React from "react";
 import { Link } from "react-router-dom";
+import s from "./NewsCardText.module.css";
 
 export default function NewsCardText({ item }) {
   const title = item?.title || "Без названия";
   const description = item?.description || "";
-  const preview = description ? description.slice(0, 150) + "..." : "";
+  const preview = description ? description.slice(0, 150) + "…" : "";
+
+  let detailTo = "#";
+  if (item.type === "article" && item.slug) {
+    detailTo = `/article/${item.slug}`;
+  } else if (item.type === "rss" && item.id) {
+    detailTo = `/rss/${item.id}`;
+  }
+  const hasLink = detailTo !== "#";
 
   return (
-    <article className="bg-[var(--bg-card)] border border-[var(--border)] rounded-xl p-3 hover:shadow-md transition flex flex-col">
-      <h3 className="text-lg font-bold mb-2 text-white">
-        {item.type === "article" && item.slug ? (
-          <Link to={`/article/${item.slug}`} className="hover:underline">
-            {title}
-          </Link>
-        ) : item.type === "rss" && item.id ? (
-          <Link to={`/rss/${item.id}`} className="hover:underline">
+    <article className={s.card}>
+      <h3 className={s.title}>
+        {hasLink ? (
+          <Link to={detailTo} className={s.titleLink}>
             {title}
           </Link>
         ) : (
-          title
+          <span>{title}</span>
         )}
       </h3>
 
-      {preview && <p className="text-sm text-gray-300">{preview}</p>}
+      {preview && <p className={s.preview}>{preview}</p>}
     </article>
   );
 }

@@ -1,0 +1,168 @@
+/* Путь: frontend/src/components/RelatedList.jsx
+   Назначение: Блок "Похожие новости" на детальной странице.
+   FIX v2025-12-21:
+     ✅ Никаких "битых иконок": картинку показываем только после onLoad
+     ✅ Если картинка не загрузилась (403/404/400) — превью НЕ рендерим (null)
+     ✅ primary = прямая ссылка, fallback = ресайзер (thumbnail)
+*/
+
+import React, { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { fetchRelated, buildThumbnailUrl } from "../Api";
+import s from "./RelatedList.module.css";
+
+// Простой кеш в памяти (живёт пока свежая вкладка)
+const CACHE_TTL_MS = 5 * 60 * 1000;
+const relatedCache = new Map(); // key: slug, value: { ts, items }
+
+function buildArticleUrl(item) {
+  // Универсальный билдер пути. Предпочитаем готовый seo_url, иначе /<category>/<slug>/
+  const seo = item?.seo_url || item?.seoPath || item?.seo;
+  if (seo) return seo.startsWith("/") ? seo : `/${seo}`;
+  const c =
+    item?.category_slug ||
+    item?.category?.slug ||
+    item?.category ||
+    "bez-kategorii";
+  const slug = item?.slug || item?.id || "";
+  return `/${c}/${slug}/`;
+}
+
+function toNonEmptyString(v) {
+  const x = String(v || "").trim();
+  return x ? x : "";
+}
+
+/** Превью-картинка, которая НЕ покажет "битую иконку" */
+function RelatedThumb({
+  src,
+  alt = "",
+  thumb = { w: 220, h: 220, q: 72, fmt: "webp", fit: "cover" },
+}) {
+  const rawSrc = useMemo(() => toNonEmptyString(src), [src]);
+
+  const viaResizer = useMemo(() => {
+    if (!rawSrc) return "";
+    return buildThumbnailUrl(rawSrc, thumb) || "";
+  }, [rawSrc, thumb?.w, thumb?.h, thumb?.q, thumb?.fmt, thumb?.fit]);
+
+  const primary = rawSrc; // сначала пробуем прямую ссылку
+  const fallback = viaResizer && viaResizer !== rawSrc ? viaResizer : "";
+
+  const [mode, setMode] = useState("primary"); // primary | fallback | dead
+  const [current, setCurrent] = useState(primary);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    setMode("primary");
+    setCurrent(primary);
+    setVisible(false);
+  }, [primary]);
+
+  if (!rawSrc) return null;
+  if (mode === "dead") return null;
+  if (!toNonEmptyString(current)) return null;
+
+  return (
+    <div className={s.thumbWrap}>
+      <img
+        src={current}
+        alt={alt}
+        className={s.thumb}
+        loading="lazy"
+        decoding="async"
+        style={{ opacity: visible ? 1 : 0 }}
+        onLoad={() => setVisible(true)}
+        onError={() => {
+          if (mode === "primary" && toNonEmptyString(fallback)) {
+            setMode("fallback");
+            setCurrent(fallback);
+            setVisible(false);
+            return;
+          }
+          setMode("dead");
+          setVisible(false);
+        }}
+      />
+    </div>
+  );
+}
+
+export default function RelatedList({ slug }) {
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function load() {
+      if (!slug) {
+        setItems([]);
+        return;
+      }
+
+      const cached = relatedCache.get(slug);
+      if (cached && Date.now() - cached.ts < CACHE_TTL_MS) {
+        setItems(cached.items || []);
+        return;
+      }
+
+      setLoading(true);
+      try {
+        const res = await fetchRelated(slug);
+        const list = Array.isArray(res) ? res : res?.results || res?.items || [];
+        if (!cancelled) {
+          setItems(list);
+          relatedCache.set(slug, { ts: Date.now(), items: list });
+        }
+      } catch (e) {
+        if (!cancelled) setItems([]);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, [slug]);
+
+  if (!slug) return null;
+
+  return (
+    <div className={s.wrap}>
+      <div className={s.title}>Похожие новости</div>
+
+      {loading && items.length === 0 ? (
+        <div className={s.loading}>Загрузка…</div>
+      ) : null}
+
+      <div className={s.list}>
+        {items.map((item) => {
+          const url = buildArticleUrl(item);
+          const title = item?.title || "Новость";
+
+          // где лежит картинка — на разных источниках бывает по-разному
+          const cover =
+            item?.image ||
+            item?.cover ||
+            item?.img ||
+            item?.thumbnail ||
+            item?.thumb ||
+            "";
+
+          return (
+            <Link key={item?.id || url} to={url} className={s.card}>
+              <RelatedThumb src={cover} alt={title} />
+
+              <div className={s.cardBody}>
+                <div className={s.cardTitle}>{title}</div>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+    </div>
+  );
+}

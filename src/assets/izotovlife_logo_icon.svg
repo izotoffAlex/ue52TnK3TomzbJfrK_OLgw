@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg"
+     viewBox="0 0 140 120"
+     fill="currentColor">
+
+  <!-- Иконка газеты -->
+  <rect x="0" y="0" width="120" height="120" rx="8" ry="8"
+        fill="none" stroke="currentColor" stroke-width="12"/>
+
+  <rect x="20" y="15" width="35" height="35" />
+
+  <line x1="65" y1="25" x2="110" y2="25"
+        stroke="currentColor" stroke-width="8"/>
+  <line x1="65" y1="45" x2="110" y2="45"
+        stroke="currentColor" stroke-width="8"/>
+
+  <line x1="20" y1="75" x2="110" y2="75"
+        stroke="currentColor" stroke-width="8"/>
+  <line x1="20" y1="95" x2="110" y2="95"
+        stroke="currentColor" stroke-width="8"/>
+
+</svg>

@@ -1,0 +1,153 @@
+<!-- Путь: frontend/public/index.html
+     Назначение: Базовый HTML-шаблон React-приложения IzotovLife с дефолтными SEO-тегами.
+     ВАЖНО:
+       • description тут должен быть ОБЩИМ (fallback), потому что уникальные описания
+         задаются на уровне страниц через react-helmet-async.
+       • Ничего критичного не удаляем — только добавляем раннее применение темы ДО первой отрисовки,
+         чтобы не было белого текста на светлых плашках при первом входе.
+       • FIX v2025-12-20: добавили data-theme (light/graphite), чтобы глобальный CSS не красил заголовки неправильно.
+-->
+
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#000000" />
+
+    <!-- =========================================================
+         FIX: РАННЕЕ ПРИМЕНЕНИЕ ТЕМЫ (до первой отрисовки)
+         Причина бага: тема применяется поздно через React/JS, и первый кадр
+         успевает нарисоваться с "не тем" цветом текста/переменных.
+         Решение: сразу ставим классы темы на <html>, синхроним на <body>,
+         и дополнительно выставляем data-theme (light/graphite) для CSS.
+         ========================================================= -->
+    <script>
+      (function () {
+        try {
+          // Поддерживаем разные ключи (на случай, если где-то раньше называли иначе)
+          var raw =
+            localStorage.getItem("themeMode") ||
+            localStorage.getItem("theme") ||
+            localStorage.getItem("izotovlife_theme") ||
+            "";
+
+          // Определяем "тёмную" тему по содержимому
+          var isDark = /graphite|dark|black|темн/i.test(String(raw));
+
+          var DARK = "theme-graphite";
+          var LIGHT = "theme-white";
+
+          // 1) Ставим класс на <html> — он существует сразу
+          var root = document.documentElement;
+          root.classList.toggle(DARK, isDark);
+          root.classList.toggle(LIGHT, !isDark);
+
+          // ✅ ВАЖНО: data-theme нужен, потому что у тебя в CSS есть правила вида :root[data-theme="light"] ...
+          root.setAttribute("data-theme", isDark ? "graphite" : "light");
+
+          // Подсказка браузеру (полезно для системных контролов)
+          root.style.colorScheme = isDark ? "dark" : "light";
+
+          // 2) Синхроним класс на <body>, когда он появится (важно, если часть CSS завязана на body.theme-*)
+          function syncBody() {
+            if (!document.body) {
+              requestAnimationFrame(syncBody);
+              return;
+            }
+            document.body.classList.toggle(DARK, isDark);
+            document.body.classList.toggle(LIGHT, !isDark);
+          }
+          syncBody();
+        } catch (e) {}
+      })();
+    </script>
+
+    <!-- БАЗОВОЕ SEO (FALLBACK) -->
+    <meta
+      name="description"
+      content="IzotovLife — новостной агрегатор: свежие новости России и мира, удобная лента и рубрики."
+    />
+    <meta
+      name="keywords"
+      content="изотов, изотовлайф, изотов лайф, новости, свежие новости, новости сегодня, Россия новости, мировые новости, политика, экономика, общество, происшествия, технологии, наука, спорт, культура, агрегатор новостей, izotovlife"
+    />
+    <meta name="author" content="IzotovLife.ru" />
+    <meta name="robots" content="index, follow" />
+
+    <!-- Open Graph для соцсетей (FALLBACK) -->
+    <meta property="og:title" content="IzotovLife — свежие новости из разных источников" />
+    <meta
+      property="og:description"
+      content="IzotovLife — новостной агрегатор: свежие новости России и мира, удобная лента и рубрики."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://izotovlife.ru/" />
+    <meta property="og:image" content="https://izotovlife.ru/logo512.png" />
+
+    <!-- Twitter Card (FALLBACK) -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="IzotovLife — агрегатор новостей" />
+    <meta
+      name="twitter:description"
+      content="IzotovLife — новостной агрегатор: свежие новости России и мира, удобная лента и рубрики."
+    />
+    <meta name="twitter:image" content="https://izotovlife.ru/logo512.png" />
+
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+
+    <title>IzotovLife — свежие новости из всех источников</title>
+
+    <!-- === Yandex.Metrika counter === -->
+    <script type="text/javascript">
+      (function (m, e, t, r, i, k, a) {
+        m[i] =
+          m[i] ||
+          function () {
+            (m[i].a = m[i].a || []).push(arguments);
+          };
+        m[i].l = 1 * new Date();
+        for (var j = 0; j < document.scripts.length; j++) {
+          if (document.scripts[j].src === r) {
+            return;
+          }
+        }
+        k = e.createElement(t);
+        a = e.getElementsByTagName(t)[0];
+        k.async = 1;
+        k.src = r;
+        a.parentNode.insertBefore(k, a);
+      })(
+        window,
+        document,
+        "script",
+        "https://mc.yandex.ru/metrika/tag.js",
+        "ym"
+      );
+
+      ym(69166312, "init", {
+        webvisor: true,
+        clickmap: true,
+        accurateTrackBounce: true,
+        trackLinks: true,
+      });
+    </script>
+    <noscript>
+      <div>
+        <img
+          src="https://mc.yandex.ru/watch/69166312"
+          style="position:absolute; left:-9999px;"
+          alt=""
+        />
+      </div>
+    </noscript>
+    <!-- === /Yandex.Metrika counter === -->
+  </head>
+  <body>
+    <noscript>Для работы сайта IzotovLife нужен включённый JavaScript.</noscript>
+    <div id="root"></div>
+  </body>
+</html>
+

@@ -1,0 +1,96 @@
+/* Путь: frontend/src/pages/Author/NewArticlePage.css
+   Назначение: Заголовок «как в Дзене»: вообще без рамки/тени, переносы, авто-высота.
+   Добавлены гипер-специфичные правила, чтобы перебить глобалки из index.css.
+*/
+
+.new-article { display: flex; flex-direction: column; min-height: 100vh; }
+
+.new-article__topbar {
+  position: sticky;
+  top: 0;
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 16px 20px;
+  background: rgba(0,0,0,0.04);
+  backdrop-filter: blur(2px);
+  z-index: 10;
+}
+
+.new-article__left { display: flex; flex-direction: column; gap: 6px; }
+
+/* ЧИСТЫЙ заголовок — без рамки/фона/тени (жёстко) */
+.new-article__title {
+  display: block;
+  width: min(1100px, 100%);
+  font-size: clamp(28px, 4vw, 48px);
+  line-height: 1.15;
+  font-weight: 800;
+  color: inherit;
+
+  background: transparent;
+  border: 0;
+  outline: none;
+  box-shadow: none;
+
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+
+  resize: none;
+  overflow: hidden;
+  white-space: pre-wrap;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+
+  padding: 8px 10px;
+  border-radius: 12px;
+}
+
+/* Супер-override против глобалок (эти селекторы побеждают всё) */
+textarea.new-article__title,
+.new-article .new-article__title,
+.new-article .new-article__title:focus,
+.new-article .new-article__title:focus-visible,
+body.theme-graphite textarea.new-article__title,
+body.theme-white textarea.new-article__title {
+  background: transparent !important;
+  border: 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* На всякий — никакой рамки у контейнеров вокруг заголовка */
+.new-article__left,
+.new-article__topbar,
+.new-article__title:focus {
+  box-shadow: none !important;
+  border: 0 !important;
+}
+
+.new-article__title::placeholder { color: rgba(127,127,127,.6); }
+.new-article__meta { font-size: 12px; opacity: .7; }
+.new-article__right { display: flex; align-items: center; gap: 12px; }
+
+.new-article__publish {
+  border: none;
+  border-radius: 12px;
+  padding: 10px 18px;
+  font-weight: 700;
+  cursor: pointer;
+  background: #ffcc00;
+  color: #1a1a1a;
+}
+.new-article__publish:disabled { opacity: .5; cursor: default; }
+
+.new-article__error {
+  color: #d33;
+  background: rgba(211,51,51,.08);
+  border: 1px solid rgba(211,51,51,.25);
+  margin: 12px 20px;
+  padding: 10px 12px;
+  border-radius: 10px;
+}
+
+.new-article__main { padding: 0 20px 60px; }

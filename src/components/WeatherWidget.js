@@ -1,13 +1,135 @@
 // Путь: frontend/src/components/WeatherWidget.js
 // Назначение: Виджет погоды для шапки сайта IzotovLife.
-// Обновления (устранён ESLint warning):
-//   ✅ loadByCity обёрнут в useCallback (стабильная ссылка).
-//   ✅ useEffect теперь зависит от [loadByCity, city] — предупреждение исчезает.
-//   ✅ Остальной функционал без изменений: кэш (30 мин), подсказки, автообновление, фолбэки.
-//   ❗ Ничего лишнего не удалял; заменил прямой вызов на мемоизированный, что требуется для корректной работы правил хуков.
+// Обновления (v2025-12-20):
+//   ✅ Добавлен fetch с таймаутом (8 сек) + 2 повтора с паузой — чтобы не падать на ERR_TIMED_OUT.
+//   ✅ Таймаут НЕ считается "AbortError": различаем отмену (silent) и таймаут (показываем fallback).
+//   ✅ Ошибки сети/таймаута показывают кэш (если есть) + кнопку "Повторить".
+//   ✅ Подсказки города (geocoding) тоже через таймаут, чтобы не подвисали.
+//   ✅ Ничего существующего не удалял — только добавил безопасные обёртки и улучшил обработку ошибок.
 
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import "./WeatherWidget.css";
+
+/* ---------- Утилиты подавления шумных ошибок ---------- */
+
+// Определяем, что ошибка — управляемая отмена fetch (например, при смене города или размонтировании)
+function isAbortError(e) {
+  return !!e && (e.name === "AbortError" || e.code === 20);
+}
+
+// Отдельно отмечаем таймаут (мы сами его выставляем)
+function isTimeoutError(e) {
+  return !!e && (e.name === "TimeoutError" || String(e.message || "").toLowerCase().includes("timeout"));
+}
+
+// Логируем только НЕ-отмены
+function logWeatherError(prefix, e) {
+  if (isAbortError(e)) return;
+  console.warn(prefix, e);
+}
+
+/* ---------- Вспомогательные сетевые утилиты ---------- */
+
+const DEFAULT_TIMEOUT_MS = 8000; // 8 секунд — комфортно для внешнего API
+const DEFAULT_RETRIES = 2; // всего будет 1 + 2 = 3 попытки
+const DEFAULT_RETRY_DELAYS = [600, 1200]; // паузы между попытками (мс), можно менять
+
+function sleep(ms, signal) {
+  return new Promise((resolve, reject) => {
+    if (signal?.aborted) return reject(Object.assign(new Error("Aborted"), { name: "AbortError" }));
+    const t = setTimeout(resolve, ms);
+    if (signal) {
+      signal.addEventListener(
+        "abort",
+        () => {
+          clearTimeout(t);
+          reject(Object.assign(new Error("Aborted"), { name: "AbortError" }));
+        },
+        { once: true }
+      );
+    }
+  });
+}
+
+// Объединяем внешний signal (из abortRef / useEffect cleanup) и внутренний (для таймаута)
+function createLinkedAbortController(externalSignal) {
+  const controller = new AbortController();
+  if (externalSignal) {
+    if (externalSignal.aborted) {
+      controller.abort();
+    } else {
+      externalSignal.addEventListener("abort", () => controller.abort(), { once: true });
+    }
+  }
+  return controller;
+}
+
+// fetch JSON с таймаутом и ретраями
+async function fetchJsonWithTimeout(url, opts = {}) {
+  const {
+    signal,
+    timeoutMs = DEFAULT_TIMEOUT_MS,
+    retries = DEFAULT_RETRIES,
+    retryDelaysMs = DEFAULT_RETRY_DELAYS,
+  } = opts;
+
+  let lastErr = null;
+
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    // отдельный контроллер на каждую попытку
+    const linked = createLinkedAbortController(signal);
+
+    let timedOut = false;
+    const timer = setTimeout(() => {
+      timedOut = true;
+      linked.abort();
+    }, timeoutMs);
+
+    try {
+      const res = await fetch(url, { signal: linked.signal });
+
+      // Важно: fetch может "упасть" до res (сетевая ошибка). Тогда попадём в catch.
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}`);
+      }
+      const data = await res.json();
+      clearTimeout(timer);
+      return data;
+    } catch (e) {
+      clearTimeout(timer);
+
+      // Если это таймаут — НЕ считаем это "тихой отменой"
+      if (timedOut) {
+        lastErr = Object.assign(new Error("Timeout"), { name: "TimeoutError" });
+      } else {
+        lastErr = e;
+      }
+
+      // Управляемая отмена (например, пользователь переключил город) — сразу выходим тихо
+      if (isAbortError(lastErr) && !isTimeoutError(lastErr)) {
+        throw lastErr;
+      }
+
+      // Если есть ещё попытки — ждём и пробуем снова
+      if (attempt < retries) {
+        const delay = retryDelaysMs[attempt] ?? retryDelaysMs[retryDelaysMs.length - 1] ?? 800;
+        try {
+          await sleep(delay, signal);
+        } catch (abortDuringSleep) {
+          // если во время ожидания отменили — выходим
+          throw abortDuringSleep;
+        }
+        continue;
+      }
+
+      // попытки закончились
+      throw lastErr;
+    }
+  }
+
+  // на всякий случай
+  throw lastErr || new Error("Unknown fetch error");
+}
 
 /* ---------- Константы и утилиты ---------- */
 
@@ -115,23 +237,31 @@ export default function WeatherWidget() {
 
   const geocodeCity = useCallback(async (cityName, signal) => {
     const q = sanitizeCityName(cityName);
+
     try {
-      const res = await fetch(
+      const geo = await fetchJsonWithTimeout(
         `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(
           q
         )}&count=1&language=ru`,
-        { signal }
+        {
+          signal,
+          timeoutMs: 7000, // геокодинг обычно быстрее, но тоже может подвиснуть
+          retries: 1, // для подсказок/геокодинга достаточно 1 повтора
+          retryDelaysMs: [500],
+        }
       );
-      if (!res.ok) return null;
-      const geo = await res.json();
+
       const first = geo?.results?.[0];
       if (!first?.latitude || !first?.longitude) return null;
+
       return {
         lat: Number(first.latitude),
         lon: Number(first.longitude),
         name: first.name || q,
       };
-    } catch {
+    } catch (e) {
+      // Отмену (смена города/размонтирование) — тихо игнорируем
+      if (isAbortError(e) && !isTimeoutError(e)) return null;
       return null;
     }
   }, []);
@@ -143,9 +273,12 @@ export default function WeatherWidget() {
       `&current_weather=true&hourly=pressure_msl&windspeed_unit=ms` +
       `&timezone=auto`;
 
-    const r = await fetch(u, { signal });
-    if (!r.ok) throw new Error(`HTTP ${r.status}`);
-    const data = await r.json();
+    const data = await fetchJsonWithTimeout(u, {
+      signal,
+      timeoutMs: DEFAULT_TIMEOUT_MS,
+      retries: DEFAULT_RETRIES,
+      retryDelaysMs: DEFAULT_RETRY_DELAYS,
+    });
 
     const cw = data?.current_weather;
     if (!cw || typeof cw.temperature !== "number") {
@@ -203,6 +336,7 @@ export default function WeatherWidget() {
         }
       }
 
+      // Отменяем предыдущий запрос (если ещё идёт)
       if (abortRef.current) abortRef.current.abort();
       const controller = new AbortController();
       abortRef.current = controller;
@@ -248,11 +382,22 @@ export default function WeatherWidget() {
           setManualMode(false);
         }, 80);
       } catch (e) {
-        console.error("Погода (fetch):", e);
+        // Тихо игнорируем управляемую отмену (но НЕ таймаут)
+        if (isAbortError(e) && !isTimeoutError(e)) return;
+
+        logWeatherError("Погода (fetch):", e);
+
         const cached = readCache();
         if (cached) setWeather({ ...cached, stale: true });
+
         setLoading(false);
-        setError("Нет связи • Повторить");
+
+        // Более понятное сообщение для таймаутов
+        if (isTimeoutError(e)) {
+          setError("Таймаут • Повторить");
+        } else {
+          setError("Нет связи • Повторить");
+        }
       }
     },
     [geocodeCity, fetchWeatherByCoords]
@@ -269,27 +414,40 @@ export default function WeatherWidget() {
     };
   }, [loadByCity, city]);
 
-  // Подсказки города
+  // Подсказки города (с отменой fetch) — теперь через таймаутный fetch
   useEffect(() => {
     if (!manualMode || !city || city.length < 2) {
       setSuggestions([]);
       return;
     }
+
+    const ctrl = new AbortController();
     clearTimeout(debounceRef.current);
+
     debounceRef.current = setTimeout(async () => {
       try {
-        const res = await fetch(
+        const data = await fetchJsonWithTimeout(
           `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(
             city
-          )}&count=5&language=ru`
+          )}&count=5&language=ru`,
+          {
+            signal: ctrl.signal,
+            timeoutMs: 6000,
+            retries: 1,
+            retryDelaysMs: [400],
+          }
         );
-        const data = await res.json();
         setSuggestions(data?.results || []);
-      } catch {
+      } catch (e) {
+        if (isAbortError(e) && !isTimeoutError(e)) return;
         setSuggestions([]);
       }
     }, 300);
-    return () => clearTimeout(debounceRef.current);
+
+    return () => {
+      clearTimeout(debounceRef.current);
+      ctrl.abort();
+    };
   }, [city, manualMode]);
 
   // Автообновление каждые 15 минут
@@ -399,3 +557,4 @@ export default function WeatherWidget() {
     </div>
   );
 }
+

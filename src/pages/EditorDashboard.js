@@ -1,94 +1,233 @@
-// frontend/src/pages/EditorDashboard.js
-// Назначение: Личный кабинет редактора — модерация статей авторов.
 // Путь: frontend/src/pages/EditorDashboard.js
+// Назначение: Кабинет редактора/модерации.
+// Фикс:
+//   ✅ Убраны условные вызовы хуков (React Hooks must be called unconditionally).
+//   ✅ Используются совместимые функции API: listPendingSubmissions, decideSubmission.
+//   ✅ Исправлен no-undef: импортирован api для editorial-comment.
+// Важно:
+//   - Этот файл нужен, чтобы сборка не падала, даже если роль "редактор" позже будет отключена.
 
 import React, { useEffect, useState } from "react";
-import { fetchModerationQueue, reviewArticle } from "../Api";
+import { Helmet } from "react-helmet-async";
+import { decideSubmission, listPendingSubmissions } from "../api/dashboards";
+import api from "../Api"; // добавлено: клиент API для editorial-comment
+
+function getId(item) {
+  return item?.id ?? item?.pk ?? item?.submission_id ?? item?._id ?? null;
+}
 
 export default function EditorDashboard() {
-  const [articles, setArticles] = useState([]);
+  const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [busyId, setBusyId] = useState(null);
+  const [error, setError] = useState("");
 
-  useEffect(() => {
-    loadArticles();
-  }, []);
-
-  async function loadArticles() {
+  async function reload() {
+    setError("");
     setLoading(true);
     try {
-      const data = await fetchModerationQueue();
-
-      // 👇 приведение к массиву
-      if (Array.isArray(data)) {
-        setArticles(data);
-      } else if (data?.results) {
-        setArticles(data.results);
-      } else {
-        setArticles([]);
-      }
-    } catch (err) {
-      console.error("Ошибка загрузки очереди модерации:", err);
-      setArticles([]);
+      const data = await listPendingSubmissions();
+      setItems(Array.isArray(data) ? data : []);
+    } catch (e) {
+      setItems([]);
+      setError(e?.detail || e?.message || "Не удалось загрузить очередь модерации");
     } finally {
       setLoading(false);
     }
   }
 
-  async function handleReview(id, action) {
-    const notes = prompt(
-      action === "revise"
-        ? "Укажите причину отправки на доработку"
-        : "Комментарий редактора (необязательно)"
-    );
+  useEffect(() => {
+    reload();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-    await reviewArticle(id, action, notes || "");
-    alert(action === "publish" ? "Статья опубликована" : "Отправлено на доработку");
+  async function onPublish(item) {
+    const id = getId(item);
+    if (!id) return;
+    setBusyId(id);
+    setError("");
+    try {
+      await decideSubmission(id, "publish");
+      await reload();
+    } catch (e) {
+      setError(e?.detail || e?.message || "Ошибка публикации");
+    } finally {
+      setBusyId(null);
+    }
+  }
 
-    setArticles((prev) => prev.filter((a) => a.id !== id));
+  async function onChanges(item) {
+    const id = getId(item);
+    if (!id) return;
+
+    const message = window.prompt("Какие правки нужны? (Сообщение автору)", "") || "";
+    if (!message.trim()) {
+      setError("Нужно написать сообщение автору (что исправить).");
+      return;
+    }
+
+    setBusyId(id);
+    setError("");
+    try {
+      await decideSubmission(id, "changes", message.trim());
+      await reload();
+    } catch (e) {
+      setError(e?.detail || e?.message || "Ошибка запроса правок");
+    } finally {
+      setBusyId(null);
+    }
   }
 
   return (
-    <div className="editor-dashboard max-w-3xl mx-auto px-4 py-6">
-      <h1 className="text-2xl font-bold text-white mb-6">Кабинет редактора</h1>
+    <>
+      <Helmet>
+        <title>Модерация — IzotovLife</title>
+        <meta name="description" content="Очередь статей на модерации." />
+      </Helmet>
 
-      {loading ? (
-        <p className="text-gray-400">Загрузка...</p>
-      ) : articles.length === 0 ? (
-        <p className="text-gray-400">Очередь пуста</p>
-      ) : (
-        <div className="space-y-4">
-          {articles.map((a) => (
-            <div key={a.id} className="card border border-gray-700 rounded-lg p-4 bg-gray-900">
-              <h3 className="text-lg font-bold text-white">{a.title}</h3>
-              {a.cover_image && (
-                <img
-                  src={a.cover_image}
-                  alt=""
-                  className="mt-2 max-h-40 rounded-md"
-                />
-              )}
-              <div
-                className="prose prose-invert mt-2"
-                dangerouslySetInnerHTML={{ __html: a.content }}
-              />
-              <div className="mt-4 flex gap-3">
-                <button
-                  onClick={() => handleReview(a.id, "publish")}
-                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
-                >
-                  Опубликовать
-                </button>
-                <button
-                  onClick={() => handleReview(a.id, "revise")}
-                  className="bg-yellow-500 hover:bg-yellow-600 text-black px-4 py-2 rounded"
-                >
-                  На доработку
-                </button>
-              </div>
-            </div>
-          ))}
+      <div style={{ maxWidth: 1100, margin: "24px auto", padding: "0 12px" }}>
+        <h1 style={{ margin: "8px 0 16px" }}>Модерация</h1>
+
+        <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 12 }}>
+          <button
+            onClick={reload}
+            disabled={loading}
+            style={{
+              padding: "10px 14px",
+              borderRadius: 12,
+              border: "1px solid rgba(0,0,0,0.12)",
+              background: "#fff",
+              cursor: loading ? "default" : "pointer",
+              fontWeight: 800,
+            }}
+          >
+            {loading ? "Загрузка..." : "Обновить"}
+          </button>
+
+          <div style={{ opacity: 0.75 }}>
+            В очереди: <b>{items.length}</b>
+          </div>
         </div>
-      )}
-    </div>
+
+        {error ? (
+          <div
+            style={{
+              padding: 12,
+              borderRadius: 12,
+              marginBottom: 12,
+              background: "rgba(239,68,68,0.12)",
+              border: "1px solid rgba(239,68,68,0.25)",
+              color: "#7f1d1d",
+              fontWeight: 700,
+            }}
+          >
+            {error}
+          </div>
+        ) : null}
+
+        {loading ? (
+          <div style={{ opacity: 0.8 }}>Загружаю очередь…</div>
+        ) : items.length === 0 ? (
+          <div style={{ opacity: 0.8 }}>Очередь пуста (или нет доступа).</div>
+        ) : (
+          <div style={{ display: "grid", gap: 12 }}>
+            {items.map((it) => {
+              const id = getId(it);
+              const title = it?.title || it?.name || `Материал #${id}`;
+              const author = it?.author_name || it?.author || it?.user_name || "";
+              const status = it?.status || it?.state || "pending";
+
+              const disabled = busyId === id;
+
+              return (
+                <div
+                  key={String(id)}
+                  style={{
+                    padding: 14,
+                    borderRadius: 14,
+                    border: "1px solid rgba(0,0,0,0.12)",
+                    background: "#fff",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: 10,
+                      alignItems: "baseline",
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    <div style={{ fontWeight: 900, fontSize: 16 }}>{title}</div>
+                    <div style={{ opacity: 0.65, fontSize: 13 }}>
+                      #{id} · {status}
+                      {author ? ` · ${author}` : ""}
+                    </div>
+                  </div>
+
+                  <div style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap" }}>
+                    <button
+                      onClick={() => onPublish(it)}
+                      disabled={disabled}
+                      style={{
+                        padding: "10px 14px",
+                        borderRadius: 12,
+                        border: "1px solid rgba(0,0,0,0.12)",
+                        background: disabled ? "rgba(0,0,0,0.06)" : "#fff",
+                        cursor: disabled ? "default" : "pointer",
+                        fontWeight: 800,
+                      }}
+                    >
+                      {disabled ? "..." : "Опубликовать"}
+                    </button>
+
+                    <button
+                      onClick={() => onChanges(it)}
+                      disabled={disabled}
+                      style={{
+                        padding: "10px 14px",
+                        borderRadius: 12,
+                        border: "1px solid rgba(0,0,0,0.12)",
+                        background: disabled ? "rgba(0,0,0,0.06)" : "#fff",
+                        cursor: disabled ? "default" : "pointer",
+                        fontWeight: 800,
+                      }}
+                    >
+                      {disabled ? "..." : "Запросить правки"}
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </>
   );
+}
+/* ---------------- IZOTOVLIFE EDITORIAL COMMENT ---------------- */
+
+/**
+ * Получить комментарий IzotovLife по slug новости
+ */
+export async function getEditorialComment(slug) {
+  if (!slug) return null;
+  try {
+    const r = await api.get(`/editorial-comment/${encodeURIComponent(slug)}/`);
+    return r?.data || null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Сохранить комментарий IzotovLife
+ */
+export async function saveEditorialComment(slug, content) {
+  if (!slug) throw new Error("saveEditorialComment: нужен slug");
+
+  const r = await api.post(`/editorial-comment/${encodeURIComponent(slug)}/`, {
+    content,
+  });
+
+  return r?.data || r;
 }

@@ -1,0 +1,443 @@
+/* Путь: frontend/src/pages/ReaderPage.module.css
+   Назначение: Стили личного кабинета (ReaderPage) в духе «Дзена»:
+     - шапка профиля + счётчики
+     - табы (Избранное / Мои статьи / Настройки)
+     - карточки сеткой
+     - блоки форм (настройки/пароль/email)
+   Тема: берётся из классов на html: theme-white / theme-graphite
+*/
+
+/* ====== БАЗОВАЯ РАЗМЕТКА ====== */
+.wrap {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 22px 14px 44px;
+}
+
+.header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 18px 14px;
+  border-radius: 18px;
+  border: 1px solid transparent;
+}
+
+.title {
+  margin: 0;
+  font-size: 28px;
+  line-height: 1.12;
+  font-weight: 900;
+  letter-spacing: 0.2px;
+}
+
+.muted {
+  margin-top: 8px;
+  opacity: 0.82;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.link {
+  text-decoration: none;
+  font-weight: 900;
+}
+
+.counters {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.counter {
+  min-width: 120px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid transparent;
+  text-align: center;
+}
+
+.counterNum {
+  font-size: 22px;
+  font-weight: 950;
+  line-height: 1;
+}
+
+.counterLabel {
+  margin-top: 6px;
+  font-size: 12px;
+  opacity: 0.82;
+}
+
+/* ====== ТАБЫ ====== */
+.tabs {
+  display: flex;
+  gap: 10px;
+  margin: 14px 0 18px;
+  padding: 8px;
+  border-radius: 16px;
+  border: 1px solid transparent;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.tab,
+.tabActive {
+  appearance: none;
+  border: 1px solid transparent;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-weight: 900;
+  font-size: 14px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.tabActive {
+  transform: translateY(-1px);
+}
+
+/* ====== СЕКЦИИ/ЗАГОЛОВКИ ====== */
+.section {
+  margin-top: 14px;
+}
+
+.h2 {
+  margin: 0 0 12px 0;
+  font-size: 18px;
+  font-weight: 950;
+  letter-spacing: 0.2px;
+}
+
+.h3 {
+  margin: 0 0 12px 0;
+  font-size: 16px;
+  font-weight: 950;
+}
+
+/* ====== КАРТОЧКИ/СЕТКА ====== */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.card {
+  display: block;
+  text-decoration: none;
+  border-radius: 16px;
+  border: 1px solid transparent;
+  padding: 14px;
+  transition: transform 120ms ease, box-shadow 120ms ease, border-color 120ms ease;
+}
+
+.card:hover {
+  transform: translateY(-1px);
+}
+
+.cardTitle {
+  font-weight: 950;
+  line-height: 1.25;
+  font-size: 15px;
+
+  /* аккуратное ограничение на 3 строки */
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.cardSource {
+  margin-top: 10px;
+  font-size: 12px;
+  opacity: 0.86;
+}
+
+.cardSource span {
+  font-weight: 900;
+}
+
+/* ====== ФОРМЫ/БОКСЫ ====== */
+.box {
+  margin-top: 12px;
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid transparent;
+}
+
+.label {
+  display: grid;
+  gap: 8px;
+  font-weight: 900;
+  font-size: 13px;
+  margin-top: 12px;
+}
+
+.input {
+  height: 46px;
+  border-radius: 14px;
+  border: 1px solid transparent;
+  padding: 0 14px;
+  font-size: 15px;
+  outline: none;
+}
+
+.textarea {
+  min-height: 120px;
+  border-radius: 14px;
+  border: 1px solid transparent;
+  padding: 12px 14px;
+  font-size: 15px;
+  outline: none;
+  resize: vertical;
+}
+
+.help {
+  margin-top: 6px;
+  font-size: 12px;
+  opacity: 0.78;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.btn,
+.btnGhost {
+  appearance: none;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  height: 44px;
+  padding: 0 16px;
+  font-weight: 950;
+  cursor: pointer;
+}
+
+.notice {
+  margin-top: 12px;
+  padding: 12px 12px;
+  border-radius: 14px;
+  border: 1px solid transparent;
+  font-weight: 900;
+  font-size: 13px;
+}
+
+.err {
+  margin-top: 10px;
+  padding: 12px 12px;
+  border-radius: 14px;
+  border: 1px solid transparent;
+  font-weight: 950;
+  font-size: 13px;
+}
+
+/* ====== СВЕТЛАЯ ТЕМА ====== */
+:global(html.theme-white) .wrap {
+  color: #0f172a;
+}
+
+:global(html.theme-white) .header {
+  background: #ffffff;
+  border-color: rgba(2, 6, 23, 0.10);
+  box-shadow: 0 18px 70px rgba(2, 6, 23, 0.08);
+}
+
+:global(html.theme-white) .tabs {
+  background: #ffffff;
+  border-color: rgba(2, 6, 23, 0.10);
+  box-shadow: 0 14px 55px rgba(2, 6, 23, 0.06);
+}
+
+:global(html.theme-white) .tab {
+  background: #ffffff;
+  border-color: rgba(2, 6, 23, 0.12);
+  color: #0f172a;
+}
+
+:global(html.theme-white) .tabActive {
+  background: #1d4ed8;
+  border-color: rgba(29, 78, 216, 0.25);
+  color: #ffffff;
+  box-shadow: 0 10px 30px rgba(29, 78, 216, 0.20);
+}
+
+:global(html.theme-white) .counter {
+  background: rgba(2, 6, 23, 0.03);
+  border-color: rgba(2, 6, 23, 0.10);
+}
+
+:global(html.theme-white) .card {
+  background: #ffffff;
+  border-color: rgba(2, 6, 23, 0.10);
+  box-shadow: 0 12px 40px rgba(2, 6, 23, 0.06);
+  color: #0f172a;
+}
+
+:global(html.theme-white) .card:hover {
+  border-color: rgba(29, 78, 216, 0.25);
+  box-shadow: 0 18px 60px rgba(2, 6, 23, 0.10);
+}
+
+:global(html.theme-white) .box {
+  background: #ffffff;
+  border-color: rgba(2, 6, 23, 0.10);
+  box-shadow: 0 12px 40px rgba(2, 6, 23, 0.06);
+}
+
+:global(html.theme-white) .input,
+:global(html.theme-white) .textarea {
+  background: #ffffff;
+  border-color: rgba(2, 6, 23, 0.14);
+  color: #0f172a;
+}
+
+:global(html.theme-white) .input::placeholder {
+  color: rgba(15, 23, 42, 0.55);
+}
+
+:global(html.theme-white) .btn {
+  background: #1d4ed8;
+  color: #ffffff;
+}
+
+:global(html.theme-white) .btnGhost {
+  background: #ffffff;
+  border-color: rgba(2, 6, 23, 0.14);
+  color: #0f172a;
+}
+
+:global(html.theme-white) .link {
+  color: #1d4ed8;
+}
+
+:global(html.theme-white) .notice {
+  background: rgba(16, 185, 129, 0.10);
+  border-color: rgba(16, 185, 129, 0.22);
+  color: #064e3b;
+}
+
+:global(html.theme-white) .err {
+  background: rgba(239, 68, 68, 0.10);
+  border-color: rgba(239, 68, 68, 0.22);
+  color: #7f1d1d;
+}
+
+/* ====== ТЁМНАЯ ТЕМА ====== */
+:global(html.theme-graphite) .wrap {
+  color: #e6eefc;
+}
+
+:global(html.theme-graphite) .header {
+  background: #0f1629;
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 24px 90px rgba(0, 0, 0, 0.45);
+}
+
+:global(html.theme-graphite) .tabs {
+  background: #0f1629;
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 18px 70px rgba(0, 0, 0, 0.35);
+}
+
+:global(html.theme-graphite) .tab {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.10);
+  color: #e6eefc;
+}
+
+:global(html.theme-graphite) .tabActive {
+  background: #3b82f6;
+  border-color: rgba(0, 0, 0, 0.15);
+  color: #0b1220;
+  box-shadow: 0 14px 40px rgba(59, 130, 246, 0.25);
+}
+
+:global(html.theme-graphite) .counter {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.10);
+}
+
+:global(html.theme-graphite) .card {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+  color: #e6eefc;
+}
+
+:global(html.theme-graphite) .card:hover {
+  border-color: rgba(59, 130, 246, 0.35);
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.34);
+}
+
+:global(html.theme-graphite) .box {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+}
+
+:global(html.theme-graphite) .input,
+:global(html.theme-graphite) .textarea {
+  background: #0b1220;
+  border-color: #2b3551;
+  color: #e6eefc;
+}
+
+:global(html.theme-graphite) .input::placeholder {
+  color: rgba(230, 238, 252, 0.55);
+}
+
+:global(html.theme-graphite) .btn {
+  background: #3b82f6;
+  color: #0b1220;
+}
+
+:global(html.theme-graphite) .btnGhost {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.10);
+  color: #e6eefc;
+}
+
+:global(html.theme-graphite) .link {
+  color: #93c5fd;
+}
+
+:global(html.theme-graphite) .notice {
+  background: rgba(16, 185, 129, 0.14);
+  border-color: rgba(16, 185, 129, 0.26);
+  color: #bbf7d0;
+}
+
+:global(html.theme-graphite) .err {
+  background: rgba(239, 68, 68, 0.14);
+  border-color: rgba(239, 68, 68, 0.26);
+  color: #fecaca;
+}
+
+/* ====== АДАПТИВ ====== */
+@media (max-width: 980px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .title {
+    font-size: 26px;
+  }
+}
+
+@media (max-width: 640px) {
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .counters {
+    justify-content: flex-start;
+  }
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

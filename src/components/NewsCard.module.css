@@ -1,76 +1,103 @@
 /* Путь: frontend/src/components/NewsCard.module.css
-   Назначение: Стили карточки новости в ленте.
-   Обновление:
-     • Адаптация под светлые/жёлтые темы.
-     • Цвет источника теперь берёт системные переменные.
-     • Плавный hover без искажения контраста.
+   Назначение: Стили карточки NewsCard в ленте.
+
+   FIX (2026-02-17 CARD SIZE TUNED):
+   - Базовый размер через aspect-ratio у .mediaWrap (3:2).
+   - Модификатор .cardLarge делает карточку чуть выше (4:3), а не квадратной.
 */
 
-:root {
-  --bg-card: #0f1115;
-  --text: #e8eaee;
+/* === Токены под темы (графит + белая) === */
+:global(:root),
+:root,
+:global(body.theme-graphite),
+body.theme-graphite,
+:global(.theme-graphite),
+.theme-graphite {
+  --bg-card: #191d24;
+  --text: #f0f2f6;
   --muted: #9aa4b2;
-  --border: rgba(255, 255, 255, 0.06);
+  --border-soft: rgba(255, 255, 255, 0.08);
   --accent: #f9c85c;
 }
 
-/* --- Светлые темы --- */
-body.theme-light,
-.theme-light {
+:global(body.theme-white),
+body.theme-white,
+:global(.theme-white),
+.theme-white {
   --bg-card: #ffffff;
   --text: #111111;
   --muted: #555555;
-  --border: rgba(0, 0, 0, 0.1);
+  --border-soft: rgba(0, 0, 0, 0.08);
   --accent: #1a4b9a;
 }
 
-body.theme-yellow,
-.theme-yellow {
-  --bg-card: #fff9e5;
-  --text: #111111;
-  --muted: #3a372e;
-  --border: rgba(0, 0, 0, 0.15);
-  --accent: #d68b00;
-}
-
-/* --- Карточка --- */
+/* === Карточка === */
 .card {
   display: flex;
   flex-direction: column;
   background: var(--bg-card);
-  border: 1px solid var(--border);
+  border: none;
+  box-shadow:
+    inset 0 0 0 1px var(--border-soft),
+    0 10px 26px rgba(0, 0, 0, 0.35);
   border-radius: 14px;
   overflow: hidden;
-  transition: transform 0.12s ease, box-shadow 0.12s ease, border-color 0.12s ease, background 0.3s ease, color 0.3s ease;
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease,
+    background 0.3s ease,
+    color 0.3s ease;
 }
 
 .card:hover {
   transform: translateY(-2px);
-  border-color: color-mix(in srgb, var(--border) 60%, var(--accent) 40%);
-  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.35);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--border-soft) 60%, var(--accent) 40%),
+    0 14px 30px rgba(0, 0, 0, 0.4);
 }
 
-/* --- Обёртка изображения --- */
+/* Модификатор для крупных карточек (главная лента) */
+.cardLarge .mediaWrap {
+  /* Был квадрат 1/1 — делаем чуть ниже, чтобы не были слишком большими */
+  aspect-ratio: 4 / 3;
+}
+
+/* === Обёртка изображения === */
 .mediaWrap {
-  position: relative; /* для позиционирования бэйджа источника */
+  position: relative;
   display: block;
-  aspect-ratio: 16 / 9;
+
+  /* Базовый размер для всех карточек */
+  aspect-ratio: 3 / 2;
+
   background: #0b0d11;
   overflow: hidden;
   isolation: isolate;
 }
 
+/* Сам <img> растягивается на всю высоту контейнера */
 .media {
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: center;
   display: block;
-  will-change: filter;
   background-color: #0b0d11;
 }
 
-/* --- Тело карточки --- */
+/* затемнение нижней части изображения */
+.mediaWrap::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 45%;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.55), transparent);
+  pointer-events: none;
+}
+
+/* === Тело карточки === */
 .body {
   padding: 12px 14px 14px;
   display: flex;
@@ -78,7 +105,7 @@ body.theme-yellow,
   gap: 8px;
 }
 
-/* --- Заголовок --- */
+/* === Заголовок === */
 .title {
   font-size: 16px;
   line-height: 1.25;
@@ -96,7 +123,7 @@ body.theme-yellow,
   color: var(--accent);
 }
 
-/* --- Источник --- */
+/* === Источник === */
 .sourceLine {
   display: inline-flex;
   align-items: center;
@@ -104,7 +131,6 @@ body.theme-yellow,
   opacity: 0.9;
   font-size: 12px;
   color: var(--muted);
-  transition: color 0.3s ease, opacity 0.3s ease;
 }
 
 .sourceDot {
@@ -112,24 +138,21 @@ body.theme-yellow,
   height: 6px;
   background: var(--muted);
   border-radius: 50%;
-  display: inline-block;
 }
 
 .sourceText {
-  max-width: 100%;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* --- Метаданные (категория, дата) --- */
+/* === Метаданные === */
 .meta {
   display: flex;
   align-items: center;
   gap: 10px;
   color: var(--muted);
   font-size: 12px;
-  margin-top: 2px;
 }
 
 .cat {
@@ -138,7 +161,6 @@ body.theme-yellow,
   border: 1px solid rgba(154, 164, 178, 0.18);
   border-radius: 999px;
   color: var(--text);
-  transition: background 0.2s ease, color 0.2s ease;
 }
 
 .card:hover .cat {
@@ -146,69 +168,16 @@ body.theme-yellow,
   color: var(--accent);
 }
 
-.date {
-  opacity: 0.9;
-}
-
-/* ===================== ДОБАВЛЕНО ДЛЯ ПРОИЗВОДИТЕЛЬНОСТИ ===================== */
-@supports (content-visibility: auto) {
-  .card {
-    content-visibility: auto;
-    contain-intrinsic-size: 322px;
-  }
-}
-
-/* ===================== ПРЕДПОЧТЕНИЯ REDUCED MOTION ===================== */
-@media (prefers-reduced-motion: reduce) {
-  .card {
-    transition: border-color 0.12s ease, box-shadow 0.12s ease;
-  }
-  .card:hover {
-    transform: none;
-  }
-}
-
-/* ===================== ДОСТУПНОСТЬ ===================== */
-.card :where(a:focus-visible) {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-  border-radius: 10px;
-}
-
-/* ===================== АДАПТИВ ===================== */
-@media (max-width: 360px) {
-  .title { font-size: 15px; }
-}
-
-/* ===================== ХОВЕР-СТАНЫ ДЛЯ СВЕТЛЫХ ТЕМ ===================== */
-body.theme-yellow .card:hover,
-.theme-yellow .card:hover {
-  border-color: rgba(0, 0, 0, 0.25);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
-  background: color-mix(in srgb, var(--bg-card) 92%, black 8%);
-}
-
-body.theme-white .card:hover,
-.theme-white .card:hover {
-  border-color: rgba(0, 0, 0, 0.2);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
-  background: color-mix(in srgb, var(--bg-card) 95%, black 5%);
-}
-
-/* ===================== ГЛАДКИЙ ПЕРЕХОД ПРИ СМЕНЕ ТЕМ ===================== */
-.card,
-.body,
-.title a,
-.sourceLine,
-.meta,
-.cat {
-  transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
-}
-/* --- Эффект появления и мягкий градиент под текстом --- */
+/* === Появление карточки === */
 .card {
   opacity: 0;
   transform: translateY(10px);
-  transition: opacity 0.5s ease, transform 0.5s ease;
+  transition:
+    opacity 0.5s ease,
+    transform 0.5s ease,
+    box-shadow 0.12s ease,
+    background 0.3s ease,
+    color 0.3s ease;
 }
 
 .card.visible {
@@ -216,14 +185,45 @@ body.theme-white .card:hover,
   transform: translateY(0);
 }
 
-/* затемнение нижней части изображения для читаемости текста */
-.mediaWrap::after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 45%;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.55), transparent);
-  pointer-events: none;
+/* =========================================================
+   MOBILE FIX
+   ========================================================= */
+@media (max-width: 768px) {
+  .mediaWrap::after {
+    height: 32%;
+    background: linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.30) 0%,
+      rgba(0, 0, 0, 0.14) 45%,
+      transparent 100%
+    );
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    will-change: opacity, transform;
+  }
+
+  .media {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+}
+
+@media (max-width: 768px) {
+  .card {
+    box-shadow: inset 0 0 0 1px var(--border-soft) !important;
+    transform: none !important;
+    transition:
+      opacity 0.35s ease,
+      background 0.3s ease,
+      color 0.3s ease !important;
+  }
+
+  .card:hover {
+    transform: none !important;
+    box-shadow: inset 0 0 0 1px var(--border-soft) !important;
+  }
+
+  .mediaWrap::after {
+    display: none !important;
+  }
 }

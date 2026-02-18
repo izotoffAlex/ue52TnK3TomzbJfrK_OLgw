@@ -1,24 +1,146 @@
 /* Путь: frontend/src/components/Navbar.css
    Назначение: стили адаптивной фиксированной шапки IzotovLife
-   Особенности:
-   • центрирование категорий
-   • голубой hover со свечением
-   • выпадающее меню "Ещё"
-   • поиск выезжает вниз из-под лупы
-   • исправлено: погода и курсы валют не съезжают вниз
+
+   ВАЖНО:
+   ✅ Шапка всегда фиксируется сверху (position: fixed !important)
+   ✅ В белой теме шапка без тени (box-shadow: none)
+
+   FIX (2026-01-07) — Android/браузеры: убираем артефакты/полосу при сжатии шапки в графите:
+   ✅ Убрали transition по box-shadow у fixed-шапки.
+   ✅ В графите отключили box-shadow и рисуем мягкую тень через .navbar::after (градиент).
 */
 
-.navbar {
-  position: sticky;
-  top: 0;
-  z-index: 2147483000;
-  background: #0b0c0f;
-  border-bottom: 1px solid #222;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-  overflow: visible !important;
+:root,
+body.theme-graphite,
+.theme-graphite,
+html.theme-graphite,
+html[data-theme="graphite"] {
+  /* ✅ Шапка темнее карточек */
+  --navbar-bg: #07080a;
+  --navbar-border: #1b1d22;
+  --navbar-shadow: 0 2px 10px rgba(0, 0, 0, 0.75);
+  --navbar-text: #f6f7fb;
+  --navbar-muted: rgba(246, 247, 251, 0.75);
+  --navbar-link-hover: #00b4ff;
+
+  --navbar-toggle-bg: rgba(255, 255, 255, 0.08);
+  --navbar-toggle-border: rgba(255, 255, 255, 0.25);
+
+  --navbar-secondary-bg: #090a0d;
+  --navbar-secondary-border: #1b1d22;
+
+  --navbar-surface: #111827;
+  --navbar-surface-border: #2a2f39;
+  --navbar-surface-shadow: 0 28px 48px rgba(0, 0, 0, 0.55);
+  --navbar-overlay: rgba(0, 0, 0, 0.55);
 }
 
-/* ---------- ВЕРХ ---------- */
+body.theme-white,
+.theme-white,
+body[data-theme="white"],
+body[data-theme="light"],
+body.theme-light,
+.theme-light,
+html.theme-white,
+html.theme-light,
+html[data-theme="white"],
+html[data-theme="light"] {
+  --navbar-bg: #ffffff;
+  --navbar-border: #e5e7eb;
+  --navbar-shadow: none !important;
+
+  --navbar-text: #0f1115;
+  --navbar-muted: rgba(17, 17, 17, 0.75);
+  --navbar-link-hover: #0068d7;
+
+  --navbar-toggle-bg: rgba(17, 17, 17, 0.05);
+  --navbar-toggle-border: rgba(17, 17, 17, 0.15);
+
+  --navbar-secondary-bg: #f3f4f6;
+  --navbar-secondary-border: transparent;
+
+  --navbar-surface: #ffffff;
+  --navbar-surface-border: rgba(0, 0, 0, 0.12);
+  --navbar-surface-shadow: 0 28px 48px rgba(15, 17, 21, 0.12);
+  --navbar-overlay: rgba(0, 0, 0, 0.35);
+}
+
+/* === База шапки === */
+.navbar {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0;
+  right: 0;
+  width: 100%;
+
+  z-index: 2147483000;
+  background: var(--navbar-bg);
+  border-bottom: 1px solid var(--navbar-border);
+  box-shadow: var(--navbar-shadow);
+  color: var(--navbar-text);
+  overflow: visible !important;
+
+  transform: none !important;
+
+  /* FIX (2026-01-07): НЕ анимируем box-shadow у fixed-элемента */
+  transition: background 0.4s ease, border-color 0.4s ease, color 0.4s ease;
+
+  background-clip: padding-box;
+}
+
+/* === FIX (2026-01-07): мягкая “тень” без box-shadow (Android не искажает текст/не даёт жирную полосу) === */
+.navbar::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+
+  /* мягкая тень вниз (высота небольшая, чтобы не было “толстой полосы”) */
+  bottom: -12px;
+  height: 12px;
+
+  pointer-events: none;
+
+  /* по умолчанию выключено */
+  opacity: 0;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.0));
+}
+
+/* В графите: выключаем box-shadow у fixed-шапки и включаем псевдо-тень */
+body.theme-graphite .navbar,
+.theme-graphite .navbar,
+html.theme-graphite .navbar,
+html[data-theme="graphite"] .navbar,
+body[data-theme="graphite"] .navbar {
+  box-shadow: none !important;
+}
+
+body.theme-graphite .navbar::after,
+.theme-graphite .navbar::after,
+html.theme-graphite .navbar::after,
+html[data-theme="graphite"] .navbar::after,
+body[data-theme="graphite"] .navbar::after {
+  opacity: 1;
+}
+
+/* В белой/светлой: псевдо-тень гарантированно выключена */
+body.theme-white .navbar::after,
+.theme-white .navbar::after,
+body.theme-light .navbar::after,
+.theme-light .navbar::after,
+body[data-theme="white"] .navbar::after,
+body[data-theme="light"] .navbar::after,
+html[data-theme="white"] .navbar::after,
+html[data-theme="light"] .navbar::after,
+html.theme-white .navbar::after,
+html.theme-light .navbar::after {
+  opacity: 0 !important;
+  height: 0 !important;
+  bottom: 0 !important;
+  background: none !important;
+}
+
+/* === Верхняя строка === */
 .navbar-top {
   display: flex;
   align-items: center;
@@ -29,45 +151,47 @@
   max-width: 1400px;
   margin: 0 auto;
   overflow: visible !important;
+  color: inherit;
+
+  transition: padding 0.18s ease, gap 0.18s ease;
 }
 
-/* ---------- ЛОГО ---------- */
+/* === Логотип === */
 .navbar-logo {
   display: flex;
   align-items: center;
   text-decoration: none;
-  color: white;
+  color: inherit;
   font-weight: 600;
   font-size: 18px;
-  transition: color 0.3s, filter 0.3s, transform 0.2s;
-    border: none;
+  gap: 8px;
+  cursor: pointer;
+  border: none;
   outline: none;
   box-shadow: none;
-.navbar-logo img,
+  flex-shrink: 0;
+}
 .navbar-logo:focus,
 .navbar-logo:focus-visible {
   border: none;
   outline: none;
   box-shadow: none;
 }
-
-}
-
 .logo-svg {
-  height: 40px;
-  width: auto;
-  fill: white;
-  transition: transform 0.2s, filter 0.3s;
+  height: auto;
+  display: block;
+  flex-shrink: 0;
+  fill: currentColor;
+  transition: transform 0.2s, filter 0.3s, width 0.25s ease;
 }
-
-.navbar-logo:hover,
-.logo-svg:hover {
-  color: #00b4ff;
+.logo-svg--full { width: 156px; }
+.logo-svg--icon { width: 36px; display: none; }
+.navbar-logo:hover .logo-svg {
   transform: scale(1.05);
-  filter: drop-shadow(0 0 6px #00b4ff) drop-shadow(0 0 12px rgba(0,180,255,0.4));
+  filter: drop-shadow(0 0 6px var(--navbar-link-hover)) drop-shadow(0 0 12px rgba(0, 180, 255, 0.35));
 }
 
-/* ---------- ЦЕНТР (курсы + погода) ---------- */
+/* === Центр (курсы + погода) === */
 .navbar-center {
   flex: 1;
   display: flex;
@@ -75,13 +199,22 @@
   justify-content: center;
   gap: 20px;
   white-space: nowrap;
-  color: white;
+  color: var(--navbar-muted);
   font-size: 14px;
   text-align: center;
-  overflow: hidden;
-  line-height: 1;
+  overflow-x: hidden;
+  overflow-y: visible;
+  line-height: 1.4;
+  padding-block: 4px;
+  min-height: 34px;
+  transition: color 0.3s ease, padding 0.18s ease, min-height 0.18s ease;
 }
-
+.navbar-center-inner {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  white-space: nowrap;
+}
 .navbar-center .rates,
 .navbar-center .weather {
   display: flex;
@@ -90,15 +223,45 @@
   gap: 8px;
   flex-shrink: 1;
   min-width: 0;
+  line-height: 1.4;
 }
-
 .navbar-center span {
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
+  line-height: 1.4;
 }
 
-/* ---------- СПРАВА ---------- */
+/* ✅ Светлая тема: тикер читаемая */
+body.theme-white .navbar-center,
+body.theme-white .navbar-center *,
+body.theme-light .navbar-center,
+body.theme-light .navbar-center *,
+.theme-white .navbar-center,
+.theme-white .navbar-center *,
+.theme-light .navbar-center,
+.theme-light .navbar-center *,
+body[data-theme="white"] .navbar-center,
+body[data-theme="white"] .navbar-center *,
+body[data-theme="light"] .navbar-center,
+body[data-theme="light"] .navbar-center *,
+html[data-theme="white"] .navbar-center,
+html[data-theme="white"] .navbar-center *,
+html[data-theme="light"] .navbar-center,
+html[data-theme="light"] .navbar-center *,
+html.theme-white .navbar-center,
+html.theme-white .navbar-center *,
+html.theme-light .navbar-center,
+html.theme-light .navbar-center * {
+  color: #000 !important;
+  fill: #000 !important;
+  stroke: #000 !important;
+  opacity: 1 !important;
+  text-shadow: none !important;
+  filter: none !important;
+}
+
+/* === Правый блок === */
 .navbar-right {
   display: flex;
   align-items: center;
@@ -106,41 +269,112 @@
   flex-shrink: 0;
   position: relative;
   overflow: visible !important;
-  z-index: 2147483647;
-}
+  z-index: 2147483000;
+  color: inherit;
 
+  transition: gap 0.18s ease;
+}
 .icon-btn {
   background: none;
   border: none;
-  color: white;
+  color: inherit;
   cursor: pointer;
   font-size: 18px;
   transition: color 0.2s, filter 0.2s, transform 0.2s;
 }
-
 .icon-btn:hover {
-  color: #00b4ff;
+  color: var(--navbar-link-hover);
   transform: scale(1.1);
-  filter: drop-shadow(0 0 6px #00b4ff);
+  filter: drop-shadow(0 0 6px var(--navbar-link-hover));
 }
 
-.suggest-link {
-  color: white;
+.suggest-link,
+.horoscope-link {
+  color: inherit;
   font-size: 15px;
   cursor: pointer;
   transition: color 0.3s, text-shadow 0.3s;
 }
-
-.suggest-link:hover {
-  color: #00b4ff;
-  text-shadow: 0 0 6px #00b4ff;
+.suggest-link:hover,
+.horoscope-link:hover {
+  color: var(--navbar-link-hover);
+  text-shadow: 0 0 6px var(--navbar-link-hover);
+}
+.suggest-link-btn,
+.horoscope-link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  margin: 0;
+  border: none;
+  background: none;
+}
+.suggest-link__icon svg,
+.horoscope-link__icon svg {
+  width: 20px;
+  height: 20px;
 }
 
-/* ---------- КАТЕГОРИИ ---------- */
+/* === Переключатель темы === */
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  border-radius: 999px;
+  border: 1px solid var(--navbar-toggle-border);
+  background: var(--navbar-toggle-bg);
+  color: inherit;
+  cursor: pointer;
+  transition: border-color 0.3s, background 0.3s, transform 0.2s, color 0.3s;
+}
+.theme-toggle:hover,
+.theme-toggle:focus-visible {
+  transform: translateY(-1px);
+  border-color: var(--navbar-link-hover);
+  background: color-mix(in srgb, var(--navbar-toggle-bg) 65%, var(--navbar-link-hover) 35%);
+  outline: none;
+}
+.theme-toggle:active { transform: translateY(0); }
+.theme-toggle .theme-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  font-size: 16px;
+  color: inherit;
+  opacity: 0.55;
+  transition: background 0.3s, color 0.3s, opacity 0.3s, box-shadow 0.3s;
+}
+.theme-toggle .theme-icon.active {
+  opacity: 1;
+  box-shadow: 0 0 6px rgba(0, 180, 255, 0.3);
+}
+.theme-toggle.graphite .theme-icon.active { background: #f6f7fb; color: #111827; }
+.theme-toggle.white .theme-icon.active { background: #20242c; color: #f6f7fb; }
+
+/* === Категории в шапке === */
 .navbar-categories {
-  background: #0d0e12;
-  border-top: 1px solid #222;
+  background: var(--navbar-secondary-bg);
+  border-top: 1px solid var(--navbar-secondary-border);
   padding: 8px 16px;
+  transition: background 0.3s ease, border-color 0.3s ease, padding 0.18s ease;
+}
+
+body.theme-white .navbar-categories,
+.theme-white .navbar-categories,
+body.theme-light .navbar-categories,
+.theme-light .navbar-categories,
+body[data-theme="white"] .navbar-categories,
+body[data-theme="light"] .navbar-categories,
+html[data-theme="white"] .navbar-categories,
+html[data-theme="light"] .navbar-categories,
+html.theme-white .navbar-categories,
+html.theme-light .navbar-categories {
+  border-top: 0 !important;
 }
 
 .categories-center {
@@ -149,318 +383,472 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 20px;
+  color: inherit;
+  position: relative;
 }
 
+/* ✅ ВАЖНО: cat-link делаем inline-flex, чтобы при сжатии не “резало” текст */
 .cat-link {
-  color: white;
+  color: inherit;
   text-decoration: none;
   font-size: 15px;
-  transition: color 0.3s, text-shadow 0.3s;
-}
-
-.cat-link:hover {
-  color: #00b4ff;
-  text-shadow: 0 0 6px #00b4ff;
-}
-
-/* ---------- ДРОПДАУН "Ещё" ---------- */
-.cat-dropdown {
-  position: relative;
+  transition: color 0.3s, text-shadow 0.3s, padding 0.18s ease;
   cursor: pointer;
+  white-space: nowrap;
+  background: transparent;
+  border: none;
+
+  display: inline-flex;
+  align-items: center;
+
+  line-height: 1.2;
+  padding: 2px 0;
+}
+.cat-link:hover {
+  color: var(--navbar-link-hover);
+  text-shadow: 0 0 6px var(--navbar-link-hover);
 }
 
+.cat-dropdown { position: relative; }
 .dropdown-trigger {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 4px;
+  background: transparent;
 }
 
-.dropdown-menu {
+body.theme-white .navbar-categories,
+body.theme-light .navbar-categories,
+.theme-white .navbar-categories,
+.theme-light .navbar-categories,
+body[data-theme="white"] .navbar-categories,
+body[data-theme="light"] .navbar-categories,
+html[data-theme="white"] .navbar-categories,
+html[data-theme="light"] .navbar-categories,
+html.theme-white .navbar-categories,
+html.theme-light .navbar-categories {
+  background: var(--navbar-secondary-bg) !important;
+}
+
+body.theme-white .categories-center,
+body.theme-white .cat-link,
+body.theme-white .dropdown-trigger,
+body.theme-light .categories-center,
+body.theme-light .cat-link,
+body.theme-light .dropdown-trigger,
+.theme-white .categories-center,
+.theme-white .cat-link,
+.theme-white .dropdown-trigger,
+.theme-light .categories-center,
+.theme-light .cat-link,
+.theme-light .dropdown-trigger,
+body[data-theme="white"] .categories-center,
+body[data-theme="white"] .cat-link,
+body[data-theme="white"] .dropdown-trigger,
+body[data-theme="light"] .categories-center,
+body[data-theme="light"] .cat-link,
+body[data-theme="light"] .dropdown-trigger,
+html[data-theme="white"] .categories-center,
+html[data-theme="white"] .cat-link,
+html[data-theme="white"] .dropdown-trigger,
+html[data-theme="light"] .categories-center,
+html[data-theme="light"] .cat-link,
+html[data-theme="light"] .dropdown-trigger,
+html.theme-white .categories-center,
+html.theme-white .cat-link,
+html.theme-white .dropdown-trigger,
+html.theme-light .categories-center,
+html.theme-light .cat-link,
+html.theme-light .dropdown-trigger {
+  color: #0f1115;
+}
+
+body.theme-white .cat-link:hover,
+body.theme-light .cat-link:hover,
+.theme-white .cat-link:hover,
+.theme-light .cat-link:hover,
+body[data-theme="white"] .cat-link:hover,
+body[data-theme="light"] .cat-link:hover,
+html[data-theme="white"] .cat-link:hover,
+html[data-theme="light"] .cat-link:hover,
+html.theme-white .cat-link:hover,
+html.theme-light .cat-link:hover {
+  color: var(--navbar-link-hover);
+  text-shadow: none;
+}
+
+/* === Скрытый измеритель ширины категорий (для мобилы) === */
+.categories-measure {
   position: absolute;
-  top: 120%;
-  left: 0;
-  background: #111;
-  border: 1px solid #333;
-  border-radius: 6px;
-  min-width: 140px;
-  z-index: 2147483645;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  left: -99999px;
+  top: -99999px;
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  white-space: nowrap;
 }
 
-.dropdown-item {
-  display: block;
-  padding: 6px 10px;
-  color: white;
-  text-decoration: none;
-  transition: background 0.2s, color 0.3s, text-shadow 0.3s;
-}
-
-.dropdown-item:hover {
-  background: rgba(0, 180, 255, 0.1);
-  color: #00b4ff;
-  text-shadow: 0 0 6px #00b4ff;
-}
-
-/* ---------- МЕНЮ БУРГЕР ---------- */
-.overlay {
+/* === Оверлей/меню "Ещё" === */
+.navbar-more-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
   z-index: 2147483600;
 }
+.navbar-more-dropdown {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 92vw;
+  max-width: 420px;
+  max-height: 70vh;
+  padding: 14px;
+  border-radius: 20px;
+  background: var(--navbar-surface);
+  border: 1px solid var(--navbar-surface-border);
+  box-shadow: var(--navbar-surface-shadow);
+  z-index: 2147483601;
+  overflow-y: auto;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.navbar-more-item {
+  position: relative;
+  border: none;
+  padding: 0;
+  margin: 0;
+  border-radius: 24px;
+  overflow: hidden;
+  cursor: pointer;
+  background-color: #000;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  text-align: left;
+}
+.navbar-more-item .overlay {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 12px;
+  border-radius: inherit;
+  background: rgba(0, 0, 0, 0.45);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.navbar-more-item:hover .overlay { background: rgba(0, 0, 0, 0.6); }
+body.navbar-categories-open { overflow: hidden; }
 
+/* === Боковое меню === */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: #000000 !important;
+  z-index: 2147483600;
+  transition: background 0.3s;
+}
 .side-menu {
   position: fixed;
   top: 0;
   right: 0;
   width: 260px;
   height: 100%;
-  background: #111;
-  color: white;
+  background: var(--navbar-surface);
+  color: inherit;
   padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 12px;
   z-index: 2147483646;
   animation: slideIn 0.3s ease;
+  border-left: 1px solid var(--navbar-surface-border);
+  box-shadow: -16px 0 40px rgba(15, 17, 21, 0.28);
 }
-
 @keyframes slideIn {
   from { transform: translateX(100%); }
   to { transform: translateX(0); }
 }
-
 .side-menu a,
-.side-menu button {
+.side-menu button,
+.side-menu .menu-item {
   background: none;
   border: none;
-  color: white;
+  color: inherit;
   text-align: left;
   cursor: pointer;
   font-size: 15px;
   transition: color 0.3s, text-shadow 0.3s;
 }
-
 .side-menu a:hover,
-.side-menu button:hover {
-  color: #00b4ff;
-  text-shadow: 0 0 6px #00b4ff;
+.side-menu button:hover,
+.side-menu .menu-item:hover {
+  color: var(--navbar-link-hover);
+  text-shadow: 0 0 6px var(--navbar-link-hover);
 }
-
 .close-btn {
   background: none;
   border: none;
-  color: white;
+  color: inherit;
   align-self: flex-end;
   font-size: 22px;
   cursor: pointer;
   margin-bottom: 10px;
-  transition: color 0.3s, filter 0.3s;
 }
-
 .close-btn:hover {
-  color: #00b4ff;
-  filter: drop-shadow(0 0 6px #00b4ff);
+  color: var(--navbar-link-hover);
+  filter: drop-shadow(0 0 6px var(--navbar-link-hover));
 }
 
-/* ---------- ПОИСК — ПОПОВЕР ---------- */
+/* === Поиск — поповер === */
 .search-anchor {
   position: relative;
   display: inline-flex;
   align-items: center;
   overflow: visible !important;
 }
-
-/* сам поповер — выезжает вниз из-под лупы */
 .search-popover {
   position: absolute;
   top: calc(100% + 8px);
   left: 0;
-  background: #111;
-  border: 1px solid #333;
+  background: var(--navbar-surface);
+  color: inherit;
+  border: 1px solid var(--navbar-surface-border);
   border-radius: 10px;
-  padding: 12px 16px 10px 40px;
-  width: 460px;
-  max-width: 85vw;
-  box-shadow: 0 8px 20px rgba(0,0,0,0.55);
+  width: 520px;
+  max-width: 90vw;
+  box-shadow: var(--navbar-surface-shadow);
   z-index: 2147483646;
   opacity: 0;
   transform: translateY(-10px);
   transition: all 0.25s ease;
   pointer-events: none;
+  padding: 12px 12px 12px 44px;
 }
-
 .search-popover.open {
   opacity: 1;
   transform: translateY(0);
   pointer-events: auto;
 }
-
 .close-search {
   position: absolute;
   top: 8px;
   left: 10px;
   border: none;
   background: transparent;
-  color: var(--fg, #fff);
+  color: inherit;
   font-size: 18px;
   cursor: pointer;
 }
 
-body.theme-yellow .search-popover,
-body.theme-white .search-popover {
-  background: #fff;
-  color: #000;
-  border: 1px solid #ccc;
+/* ✅ На маленьких экранах бегущая строка — отдельной строкой */
+@media (max-width: 1100px) {
+  .navbar-top { flex-wrap: wrap; align-items: center; gap: 8px; }
+  .navbar-logo { order: 1; flex: 0 0 auto; }
+  .navbar-right { order: 2; flex: 1 1 auto; justify-content: flex-end; gap: 12px; }
+  .navbar-center {
+    order: 3;
+    flex: 0 0 100%;
+    width: 100%;
+    justify-content: flex-start;
+    font-size: 15px;
+    min-height: 40px;
+    padding-top: 6px;
+    padding-bottom: 8px;
+  }
+  .navbar-center span { overflow: visible; text-overflow: initial; }
 }
 
-body.theme-yellow .close-search,
-body.theme-white .close-search {
-  color: #000;
-}
-
-/* ---------- АДАПТИВНОСТЬ ---------- */
+/* ✅ Мобильные/узкие: один ряд категорий — только влезшие + "Ещё" */
 @media (max-width: 900px) {
-  .navbar-top { flex-wrap: wrap; }
-  .categories-center { gap: 12px; font-size: 14px; }
-  .navbar-center { font-size: 13px; gap: 10px; }
-  .search-popover { width: 90vw; left: 50%; transform: translate(-50%, -10px); }
+  .navbar-categories { padding: 8px 10px; }
+  .categories-center {
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    overflow: hidden;
+    gap: 14px;
+  }
+}
+
+/* Поиск на мобилках — по центру */
+@media (max-width: 768px) {
+  .navbar-top { padding-inline: 8px; }
+  .search-popover {
+    position: fixed;
+    top: 64px;
+    left: 50% !important;
+    right: auto !important;
+    transform: translate(-50%, -10px);
+    width: calc(100vw - 32px);
+    max-width: 520px;
+    margin: 0;
+  }
   .search-popover.open { transform: translate(-50%, 0); }
 }
 
-/* ---------- УМНОЕ СОКРАЩЕНИЕ ПОГОДЫ ---------- */
-@media (max-width: 1100px) { .navbar-center .weather span:nth-child(3) { display:none; } }
-@media (max-width: 900px)  { .navbar-center .weather span:nth-child(2) { display:none; } }
-@media (max-width: 700px)  { .navbar-center .rates { display:none; } }
+/* ✅ Сжатая шапка при скролле — сжимаем ВСЁ */
+.navbar--collapsed .navbar-top { padding-top: 4px; padding-bottom: 4px; gap: 8px; }
+.navbar--collapsed .logo-svg--full { width: 130px; }
+.navbar--collapsed .navbar-right { gap: 12px; }
 
-/* ---------- ДОСТУПНЫЕ ТЕМЫ (из твоей версии) ---------- */
-html, body {
-  transition: background-color 0.4s ease, color 0.4s ease, filter 0.4s ease;
+/* ✅ ВАЖНО: сжатие тикера/центра (иначе верх не уменьшается) */
+.navbar--collapsed .navbar-center {
+  min-height: 26px;
+  padding-top: 2px;
+  padding-bottom: 2px;
 }
 
-body.theme-default {
-  background: #0b0c0f;
-  color: #ffffff;
-  font-size: 15px;
+/* ✅ Категории: сжимаем padding, но не режем текст */
+.navbar--collapsed .navbar-categories { padding-top: 4px; padding-bottom: 4px; }
+
+/* В брейкпоинте <=1100 тикер становится отдельной строкой и имеет свои min-height/padding —
+   поэтому обязательно переопределяем и тут. */
+@media (max-width: 1100px) {
+  .navbar--collapsed .navbar-center {
+    min-height: 28px;
+    padding-top: 2px;
+    padding-bottom: 2px;
+  }
 }
 
-body.theme-yellow {
-  background: #fff8d1;
-  color: #000;
-  font-size: 18px;
-  font-weight: 600;
-  filter: brightness(110%) contrast(120%);
+/* ТОЛЬКО графит: затемнение (box-shadow больше не используем) */
+body.theme-graphite .navbar--collapsed,
+.theme-graphite .navbar--collapsed,
+html.theme-graphite .navbar--collapsed,
+html[data-theme="graphite"] .navbar--collapsed {
+  background: #050608;
 }
 
-body.theme-white {
-  background: #ffffff;
-  color: #000;
-  font-size: 17px;
-  filter: brightness(105%) contrast(115%);
+/* Светлая/белая: без тени */
+body.theme-white .navbar--collapsed,
+.theme-white .navbar--collapsed,
+body.theme-light .navbar--collapsed,
+.theme-light .navbar--collapsed,
+body[data-theme="white"] .navbar--collapsed,
+body[data-theme="light"] .navbar--collapsed,
+html[data-theme="white"] .navbar--collapsed,
+html[data-theme="light"] .navbar--collapsed,
+html.theme-white .navbar--collapsed,
+html.theme-light .navbar--collapsed {
+  box-shadow: none !important;
+  background: #ffffff !important;
+  border-bottom: 1px solid #e5e7eb !important;
 }
 
-/* Путь: frontend/src/components/Navbar.css
-   Назначение: стили адаптивной фиксированной шапки IzotovLife
-   Дополнение:
-   ✅ Стили для сетки категорий в выпадающем меню (.dropdown-grid / .dropdown-card / .overlay)
-   (Остальной файл оставлен без изменений — вставьте целиком, он совместим с вашей текущей версией)
-*/
-
-/* ...ваш текущий файл до блока .dropdown-menu — БЕЗ ИЗМЕНЕНИЙ... */
-
-/* ---------- ДРОПДАУН "Ещё" ---------- */
-.cat-dropdown {
-  position: relative;
-  cursor: pointer;
+/* Лого на очень узких */
+@media (max-width: 360px) {
+  .logo-svg--full { display: none; }
+  .logo-svg--icon { display: block; }
+}
+@media (min-width: 361px) {
+  .logo-svg--full { display: block; }
+  .logo-svg--icon { display: none; }
 }
 
-.dropdown-trigger {
-  display: flex;
-  align-items: center;
-  gap: 4px;
+/* Текст/иконки предложить/гороскоп */
+@media (max-width: 900px) {
+  .suggest-link__text,
+  .horoscope-link__text { display: none; }
+  .suggest-link__icon,
+  .horoscope-link__icon { display: inline-flex; }
+}
+@media (min-width: 901px) {
+  .suggest-link__text,
+  .horoscope-link__text { display: inline; }
+  .suggest-link__icon,
+  .horoscope-link__icon { display: none; }
 }
 
-.dropdown-menu {
-  position: absolute;
-  top: 120%;
-  left: 0;
-  background: #111;
-  border: 1px solid #333;
-  border-radius: 10px; /* было 6px — чуть скруглим под карточки */
-  min-width: 280px;
-  z-index: 2147483645;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
-  padding: 10px; /* чтобы сетка не липла к краю */
+/* ✅ Доп.страховка на белую/светлую: никаких теней у navbar */
+body.theme-white .navbar,
+.theme-white .navbar,
+body.theme-light .navbar,
+.theme-light .navbar,
+body[data-theme="white"] .navbar,
+body[data-theme="light"] .navbar,
+html[data-theme="white"] .navbar,
+html[data-theme="light"] .navbar,
+html.theme-white .navbar,
+html.theme-light .navbar {
+  box-shadow: none !important;
+  filter: none !important;
+  border-bottom: 1px solid #e5e7eb !important;
 }
 
-/* ✅ Сетка карточек категорий */
-.dropdown-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(120px, 1fr));
-  gap: 10px;
+/* =======================================================================
+   FIX — ГРАФИТ ПЕРЕБИВАЕТ "СЛУЧАЙНЫЙ LIGHT"
+   ======================================================================= */
+
+body.theme-graphite .navbar,
+.theme-graphite .navbar,
+html.theme-graphite .navbar,
+html[data-theme="graphite"] .navbar,
+body[data-theme="graphite"] .navbar {
+  color: var(--navbar-text) !important;
 }
 
-.dropdown-card {
-  position: relative;
-  width: 160px;
-  height: 100px;
-  border-radius: 10px;
-  overflow: hidden;
-  display: block;
-  cursor: pointer;
-  border: 1px solid rgba(255,255,255,0.08);
-  background: #0a0f1a;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+body.theme-graphite .navbar-center,
+.theme-graphite .navbar-center,
+html.theme-graphite .navbar-center,
+html[data-theme="graphite"] .navbar-center,
+body[data-theme="graphite"] .navbar-center {
+  color: var(--navbar-muted) !important;
 }
 
-.dropdown-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(0,0,0,0.35);
-  border-color: rgba(0,180,255,0.35);
+body.theme-graphite .navbar-center *,
+.theme-graphite .navbar-center *,
+html.theme-graphite .navbar-center *,
+html[data-theme="graphite"] .navbar-center *,
+body[data-theme="graphite"] .navbar-center * {
+  color: inherit !important;
+  fill: currentColor !important;
+  stroke: currentColor !important;
 }
 
-.dropdown-card img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  transition: transform 0.25s ease;
+body.theme-graphite .navbar-categories,
+.theme-graphite .navbar-categories,
+html.theme-graphite .navbar-categories,
+html[data-theme="graphite"] .navbar-categories,
+body[data-theme="graphite"] .navbar-categories {
+  color: var(--navbar-text) !important;
 }
 
-.dropdown-card:hover img {
-  transform: scale(1.05);
+body.theme-graphite .categories-center,
+body.theme-graphite .cat-link,
+body.theme-graphite .dropdown-trigger,
+.theme-graphite .categories-center,
+.theme-graphite .cat-link,
+.theme-graphite .dropdown-trigger,
+html.theme-graphite .categories-center,
+html.theme-graphite .cat-link,
+html.theme-graphite .dropdown-trigger,
+html[data-theme="graphite"] .categories-center,
+html[data-theme="graphite"] .cat-link,
+html[data-theme="graphite"] .dropdown-trigger,
+body[data-theme="graphite"] .categories-center,
+body[data-theme="graphite"] .cat-link,
+body[data-theme="graphite"] .dropdown-trigger {
+  color: inherit !important;
 }
 
-.dropdown-card .overlay {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  padding: 6px 8px;
-  font-size: 13px;
-  color: #fff;
-  background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.65) 100%);
-  text-shadow: 0 0 6px rgba(0,0,0,0.65);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+body.theme-graphite .cat-link:hover,
+.theme-graphite .cat-link:hover,
+html.theme-graphite .cat-link:hover,
+html[data-theme="graphite"] .cat-link:hover,
+body[data-theme="graphite"] .cat-link:hover {
+  color: var(--navbar-link-hover) !important;
+  text-shadow: 0 0 6px var(--navbar-link-hover);
 }
-
-.dropdown-item { /* оставлено для совместимости, если где-то ещё используется */
-  display: block;
-  padding: 6px 10px;
-  color: white;
-  text-decoration: none;
-  transition: background 0.2s, color 0.3s, text-shadow 0.3s;
-}
-
-.dropdown-item:hover {
-  background: rgba(0, 180, 255, 0.1);
-  color: #00b4ff;
-  text-shadow: 0 0 6px #00b4ff;
-}
-
-/* ...остальной файл без изменений... */

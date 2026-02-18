@@ -1,0 +1,91 @@
+/* Путь: frontend/src/pages/AuthorDashboard.css
+   Полноэкранный «дзен»-режим: перекрываем всё, скрываем шапку/футер сайта.
+*/
+
+/* Полноэкранный «дзен»-режим */
+body.zen-no-scroll { overflow: hidden; }
+
+/* скрыть шапки/футеры, если они под оверлеем всё ещё смонтированы */
+body.zen-no-scroll header,
+body.zen-no-scroll .Header,
+body.zen-no-scroll .AppHeader,
+body.zen-no-scroll .Navbar,
+body.zen-no-scroll .Topbar,
+body.zen-no-scroll .SiteHeader,
+body.zen-no-scroll nav[role="navigation"],
+body.zen-no-scroll footer,
+body.zen-no-scroll .Footer,
+body.zen-no-scroll .SiteFooter {
+  display: none !important;
+}
+
+/* Оверлей поверх всего */
+.zen-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 2147483647; /* максимум */
+  background: var(--app-bg, #0d0f14);
+  color: var(--fg, #fff);
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+}
+
+/* Верхняя панель */
+.zen-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 2147483647;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 12px;
+  padding: max(8px, env(safe-area-inset-top)) 16px 8px 16px;
+  background: var(--app-bg, #0d0f14);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+}
+
+.zen-topbar__left, .zen-topbar__center, .zen-topbar__right {
+  display: flex; align-items: center; gap: 8px;
+}
+.zen-topbar__left { justify-content: flex-start; }
+.zen-topbar__center { justify-content: center; }
+.zen-topbar__right { justify-content: flex-end; }
+
+.zen-topbar__title { font-weight: 700; font-size: 16px; opacity: .9; }
+.zen-topbar__status { font-size: 13px; opacity: .8; margin-right: 6px; }
+
+.btn {
+  height: 36px; padding: 0 14px; border-radius: 10px;
+  background: rgba(255,255,255,0.08); color: #fff;
+  border: 1px solid rgba(255,255,255,0.1); transition: 120ms ease;
+}
+.btn:hover { background: rgba(255,255,255,0.12); }
+.btn:active { transform: translateY(1px); }
+.btn--ghost { background: transparent; border-color: rgba(255,255,255,0.12); }
+.btn--accent { background: var(--brand-accent, #3b82f6); border-color: rgba(0,0,0,0.15); }
+
+.zen-workarea { flex: 1 1 auto; overflow: auto; padding: 24px; }
+@media (min-width: 768px) { .zen-workarea { padding: 28px 32px 40px; } }
+.zen-workarea > * { max-width: 960px; margin-left: auto; margin-right: auto; }
+
+/* Заголовок */
+.zen-title-input {
+  width: 100%;
+  font-size: clamp(24px, 3.4vw, 42px);
+  line-height: 1.15;
+  font-weight: 800;
+  color: var(--fg, #fff);
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin: 18px 0;
+  outline: none;
+}
+.zen-title-input:focus {
+  border-color: rgba(255,255,255,0.28);
+  background: rgba(255,255,255,0.05);
+}
+.zen-title-input::placeholder { color: rgba(255,255,255,0.35); }

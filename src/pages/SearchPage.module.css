@@ -1,9 +1,10 @@
 /* Путь: frontend/src/pages/SearchPage.module.css
-   Назначение: Карточки в стиле Яндекс.Дзен — текст поверх фото, без мутности.
-   Особенности:
-   • Фото полностью видно.
-   • Лёгкий затемняющий градиент только снизу.
-   • Текст и источник читаемы при любом фоне.
+   Назначение: Стили для страницы поиска.
+   ИСПРАВЛЕНО (2026-01-21):
+   ✅ Текстовые новости отображаются как в центральной ленте
+   ✅ Убран заголовок "Текстовые новости"
+   ✅ Исправлено отображение источника
+   ✅ Адаптивная верстка для мобильных
 */
 
 :root {
@@ -11,229 +12,284 @@
   --fg: #ffffff;
   --muted: rgba(255, 255, 255, 0.8);
   --accent: rgb(249, 200, 92);
+  --card-bg: rgba(255, 255, 255, 0.03);
+  --border-color: rgba(255, 255, 255, 0.1);
 }
 
-/* Светлая тема */
-:global(body.theme-light) .search-page,
-:global(.theme-light) .search-page {
+/* Белая тема */
+:global(body.theme-white) .search-page,
+:global(.theme-white) .search-page {
   --bg: #fdfdfd;
   --fg: #111;
   --muted: #333;
   --accent: #1a4b9a;
+  --card-bg: rgba(0, 0, 0, 0.02);
+  --border-color: rgba(0, 0, 0, 0.1);
 }
 
-/* Жёлтая тема */
-:global(body.theme-yellow) .search-page,
-:global(.theme-yellow) .search-page {
-  --bg: #fff9e6;
-  --fg: #111;
-  --muted: #3a372e;
-  --accent: #d68b00;
-}
-
-/* Контейнер */
+/* Контейнер страницы */
 .search-page {
-  max-width: 1200px;
-  margin: 20px auto;
-  padding: 0 16px 60px;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 92px 14px 60px;
   color: var(--fg);
-  background: var(--bg);
+  background: transparent;
+  position: relative;
+  z-index: 2;
+  min-height: 100vh;
 }
 
-.search-page h1 {
-  margin: 0 0 16px;
-  font-size: 26px;
+/* Заголовок и строка поиска */
+.search-header-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 24px;
 }
 
-.search-info {
+.search-header-title {
+  font-size: 24px;
+  margin: 0;
+  font-weight: 800;
+  color: var(--fg);
+}
+
+.search-query-text {
+  opacity: 0.8;
+  font-size: 14px;
   color: var(--muted);
-  margin-bottom: 16px;
-  font-size: 15px;
 }
 
-/* Сетка */
+.query-strong {
+  font-weight: 800;
+  opacity: 1;
+}
+
+.results-count {
+  opacity: 0.7;
+  font-size: 13px;
+  margin-left: 6px;
+}
+
+/* Layout для двух колонок */
+.search-layout {
+  display: grid;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.search-layout.desktop {
+  grid-template-columns: 1fr 360px;
+  align-items: start;
+}
+
+.search-layout.mobile {
+  grid-template-columns: 1fr;
+}
+
+.search-left {
+  min-width: 0;
+}
+
+.search-right {
+  min-width: 0;
+  border-radius: 14px;
+  border: 1px solid var(--border-color);
+  background: var(--card-bg);
+  overflow: hidden;
+}
+
+.search-right.mobileRight {
+  margin-top: 16px;
+}
+
+/* УБРАН ЗАГОЛОВОК .search-right-title */
+
+.search-right-list {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Сетка для карточек с фото */
 .search-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 20px;
 }
 
-/* --------------------------- */
-/*      Карточка как в Дзене   */
-/* --------------------------- */
-.search-card {
-  position: relative;
-  border-radius: 14px;
+.photo-grid {
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+}
+
+/* Стили для обертки NewsCard в левой колонке (с фото) */
+.search-photo-card {
+  display: block;
+  border-radius: 16px;
   overflow: hidden;
-  background: #000;
-  display: flex;
-  flex-direction: column;
-  height: 240px;
+  border: 1px solid var(--border-color);
+  background: var(--card-bg);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.35);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.search-photo-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.45);
+}
+
+/* Стили для текстовых новостей (как в центральной ленте) */
+.text-news-item {
+  padding: 16px;
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color 0.2s ease;
+}
+
+.text-news-item:last-child {
+  border-bottom: none;
+}
+
+.text-news-item:hover {
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+.text-title {
+  display: block;
+  font-size: 15px;
+  line-height: 1.3;
+  color: var(--fg);
   text-decoration: none;
-  color: #fff;
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  margin-bottom: 8px;
+  font-weight: normal;
 }
 
-.search-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
-}
-
-/* Фото */
-.search-card img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.4s ease;
-}
-
-.search-card:hover img {
-  transform: scale(1.05);
-}
-
-/* Градиент как в Дзене */
-.search-card::after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 65%;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.85) 0%, rgba(0, 0, 0, 0.05) 100%);
-  pointer-events: none;
-  z-index: 1;
-}
-
-/* Текст поверх */
-.card-body {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  z-index: 2;
-  padding: 14px 16px 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-/* Источник — добавляем сверху */
-.card-source {
-  position: absolute;
-  top: 10px;
-  left: 12px;
-  z-index: 3;
-  background: rgba(0, 0, 0, 0.65);
-  color: #fff;
-  font-size: 13px;
-  font-weight: 500;
-  padding: 4px 10px;
-  border-radius: 8px;
-  backdrop-filter: blur(4px);
-  text-transform: lowercase;
-}
-
-/* Источник в светлых темах */
-:global(body.theme-light) .card-source,
-:global(.theme-light) .card-source {
-  background: rgba(255, 255, 255, 0.8);
-  color: #111;
-}
-
-/* Дата и источник внизу */
-.card-meta {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.9);
-}
-
-/* Заголовок */
-.card-title {
-  margin: 0;
-  font-size: 17px;
-  line-height: 1.35;
-  font-weight: 600;
-  color: #fff;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
-  overflow: hidden;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-}
-
-/* Описание */
-.card-summary {
-  margin: 0;
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.88);
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-/* Ссылка */
-.card-link {
-  margin-top: 4px;
-  color: var(--accent);
-  font-size: 14px;
-  font-weight: 500;
-  text-decoration: none;
-}
-
-.card-link:hover {
+.text-title:hover {
   text-decoration: underline;
 }
 
-/* Скелетон */
-.skeleton {
-  height: 240px;
-  border-radius: 14px;
-  background: linear-gradient(90deg, #c8c8c8 25%, #eaeaea 37%, #c8c8c8 63%);
-  background-size: 400% 100%;
-  animation: shimmer 1.4s ease infinite;
+.text-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
 }
-@keyframes shimmer {
-  0% { background-position: -400px 0; }
-  100% { background-position: 400px 0; }
+
+.text-source {
+  font-weight: 600;
+  color: var(--fg);
+}
+
+.text-date {
+  color: var(--muted);
+  opacity: 0.8;
+}
+
+/* Загрузка */
+.loading {
+  padding: 40px 0;
+  opacity: 0.8;
+  text-align: center;
+  font-size: 16px;
+}
+
+.loading-more {
+  padding: 30px 0;
+  text-align: center;
+  opacity: 0.7;
+  font-size: 14px;
+}
+
+.loading-more-global {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 0;
+  gap: 12px;
+}
+
+.loading-spinner {
+  width: 30px;
+  height: 30px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top: 3px solid rgba(255, 255, 255, 0.8);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.empty {
+  padding: 40px 0;
+  opacity: 0.85;
+  text-align: center;
+  font-size: 16px;
+}
+
+.back-btn {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+  color: inherit;
+  border-radius: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.load-more-container {
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Мобильная адаптация */
 @media (max-width: 768px) {
-  .search-card { height: 200px; }
-  .card-body { padding: 12px; }
-  .card-title { font-size: 15px; }
-  .card-summary { font-size: 13px; }
-  .card-source {
-    top: 8px;
-    left: 10px;
-    font-size: 12px;
-    padding: 3px 8px;
+  .search-page {
+    padding: 80px 12px 40px;
   }
-}
-/* Хлебные крошки */
-.breadcrumbs {
-  font-size: 14px;
-  color: var(--muted, rgba(255,255,255,0.7));
-  margin-bottom: 16px; /* расстояние до заголовка */
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px; /* увеличенный отступ между элементами */
-  align-items: center;
-}
 
-.breadcrumbs span {
-  margin: 0 4px; /* дополнительный маленький отступ вокруг стрелок */
-}
+  .search-header-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 
-.breadcrumbs a {
-  color: var(--accent, #3ea6ff);
-  text-decoration: none;
-  transition: color 0.2s ease;
-}
+  .search-header-title {
+    font-size: 20px;
+  }
 
-.breadcrumbs a:hover {
-  text-decoration: underline;
+  .search-query-text {
+    font-size: 13px;
+    margin-top: 5px;
+  }
+
+  .search-layout.desktop,
+  .search-layout.mobile {
+    grid-template-columns: 1fr;
+  }
+
+  .photo-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .search-photo-card {
+    border-radius: 12px;
+  }
+
+  .text-news-item {
+    padding: 12px;
+  }
+
+  .text-title {
+    font-size: 14px;
+  }
+
+  .text-meta {
+    font-size: 11px;
+    gap: 8px;
+  }
 }

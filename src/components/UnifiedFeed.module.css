@@ -1,0 +1,61 @@
+/* Путь: frontend/src/components/UnifiedFeed.module.css
+   Назначение: стили ONE FEED (единая лента) как у крупных новостных сайтов.
+   Принципы:
+   - одна колонка
+   - HERO сверху (опционально)
+   - карточки идут вертикально, с аккуратным ритмом
+*/
+
+.feed {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 16px 14px 24px;
+}
+
+.loading,
+.empty,
+.loadingMore {
+  padding: 28px 0;
+  text-align: center;
+  opacity: 0.85;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.heroItem {
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.listItem {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.sentinel {
+  min-height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* лёгкая адаптация */
+@media (max-width: 768px) {
+  .feed {
+    padding: 12px 12px 20px;
+  }
+  .list {
+    gap: 12px;
+  }
+}

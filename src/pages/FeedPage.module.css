@@ -1,136 +1,295 @@
 /* Путь: frontend/src/pages/FeedPage.module.css
-   Назначение: карточки главной ленты IzotovLife (в стиле Дзена)
-   Исправлено:
-   ✅ Добавлен источник на карточках (верхний левый угол)
-   ✅ Текст читаем на любых фонах
-   ✅ Градиент и тень оптимизированы
+   Назначение: оформление главной ленты IzotovLife (портальный стиль).
+
+   FIX (2026-02-17 CARD SIZE TUNED):
+   - Обычные фото‑блоки: две крупные карточки в ряд.
+   - Hero‑сетка чуть мягче (1.6fr / 1.2fr), без растяжения на две строки.
 */
 
-:root {
-  --bg: #0b0c0f;
-  --fg: #ffffff;
-  --accent: rgb(249, 200, 92);
+/* ==== СВЕТЛАЯ ТЕМА ==== */
+:global(:root),
+:global(body),
+:global(.theme-white) {
+  --feed-bg: #ffffff;
+  --feed-fg: #111111;
+  --feed-muted: rgba(17, 17, 17, 0.65);
+  --feed-accent: #d4af37;
+  --feed-border: rgba(0, 0, 0, 0.12);
+
+  --feed-card-bg: #ffffff;
+  --feed-card-shadow: 0 2px 10px rgba(0, 0, 0, 0.12);
+  --feed-card-hover-shadow: 0 10px 26px rgba(15, 17, 21, 0.18);
+
+  --feed-card-mobile-border: rgba(0, 0, 0, 0.10);
 }
 
-/* Светлая тема */
-:global(body.theme-light) .feed-page,
-:global(.theme-light) .feed-page {
-  --bg: #fdfdfd;
-  --fg: #111;
-  --accent: #1a4b9a;
-}
-
-/* Жёлтая тема */
-:global(body.theme-yellow) .feed-page,
-:global(.theme-yellow) .feed-page {
-  --bg: #fff9e6;
-  --fg: #111;
-  --accent: #c38b00;
-}
-
+/* ==== ОБЁРТКА ГЛАВНОЙ ЛЕНТЫ ==== */
 .feed-page {
-  background: var(--bg);
-  color: var(--fg);
+  background: var(--feed-bg);
+  color: var(--feed-fg);
   padding: 1rem;
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+  transition: background 0.3s ease, color 0.3s ease;
 }
 
-/* Сетка карточек */
+/* ===== СТАРЫЙ РЕЖИМ (оставлен на будущее) ===== */
+
 .news-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: 1fr;
   gap: 1.2rem;
 }
 
-/* Карточка */
+@media (min-width: 640px) {
+  .news-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 .news-card {
   position: relative;
   border-radius: 16px;
   overflow: hidden;
-  background: #000;
+  background: var(--feed-card-bg);
+  box-shadow: var(--feed-card-shadow);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
+  transform: translateZ(0);
+  min-height: 360px;
 }
 
 .news-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--feed-card-hover-shadow);
 }
 
-/* Фото */
-.news-image {
-  width: 100%;
-  height: 240px;
-  object-fit: cover;
+/* Старый правый текстовый столбец */
+.textColHeader {
+  font-size: 20px;
+  font-weight: 800;
+  margin: 4px 0 12px 0;
+}
+
+.textColEmpty {
+  border: 1px solid var(--feed-border);
+  border-radius: 14px;
+  padding: 14px 16px;
+  background: var(--feed-card-bg);
+  color: var(--feed-fg);
+}
+
+/* Списки старого режима */
+.text-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.text-list-item {
+  border-bottom: 1px solid var(--feed-border);
+  padding-bottom: 10px;
+  color: var(--feed-fg);
+}
+
+.text-list-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.text-list-link {
   display: block;
-  transition: transform 0.4s ease;
-}
-
-.news-card:hover .news-image {
-  transform: scale(1.05);
-}
-
-/* Градиент снизу */
-.news-gradient {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 75%;
-  background: linear-gradient(
-    to top,
-    rgba(0, 0, 0, 0.95) 0%,
-    rgba(0, 0, 0, 0.7) 40%,
-    rgba(0, 0, 0, 0.3) 70%,
-    transparent 100%
-  );
-}
-
-/* Контент (заголовок + ссылка) */
-.news-content {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 1.1rem;
-  color: var(--fg);
-  z-index: 2;
-}
-
-/* Заголовок */
-.news-title {
+  color: inherit;
+  font-size: 0.95rem;
   font-weight: 600;
-  font-size: 1.1rem;
-  line-height: 1.35;
-  margin-bottom: 0.4rem;
-  color: #fff;
-  text-shadow:
-    0 2px 4px rgba(0, 0, 0, 0.9),
-    0 0 4px rgba(0, 0, 0, 0.6),
-    0 0 1px rgba(0, 0, 0, 0.8);
-}
-
-/* "Читать далее" */
-.news-link {
-  font-weight: 600;
-  color: var(--accent);
   text-decoration: none;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  line-height: 1.25;
 }
 
-.news-link:hover {
+.text-list-link:hover {
+  color: var(--feed-accent);
   text-decoration: underline;
 }
 
-/* Источник (верхний левый угол) */
-.news-source {
-  position: absolute;
-  top: 0;
-  left: 0;
-  background: rgba(0, 0, 0, 0.6);
-  color: var(--accent);
-  font-size: 0.8rem;
-  font-weight: 500;
-  padding: 0.4rem 0.6rem;
-  border-bottom-right-radius: 8px;
-  z-index: 3;
-  backdrop-filter: blur(2px);
+.text-list-source {
+  margin-top: 6px;
+  font-size: 0.82rem;
+  color: var(--feed-muted);
+}
+
+/* "Входящие" новости (трей) */
+.incomingTrayWrap {
+  max-height: min(60vh, 360px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+
+  padding-top: 8px;
+  padding-bottom: max(8px, env(safe-area-inset-bottom));
+}
+
+.incomingTrayItem {
+  display: block;
+  border-radius: 12px;
+  padding: 10px 12px;
+  text-decoration: none;
+  transition: background 0.15s ease;
+}
+
+.incomingTrayItem:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.incomingTrayTitle {
+  font-weight: 700;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--feed-accent);
+}
+
+.incomingTraySource {
+  font-size: 12px;
+  line-height: 16px;
+  margin-top: 4px;
+  display: flex;
+  align-items: baseline;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.incomingTraySourceLabel {
+  opacity: 0.7;
+  flex: 0 0 auto;
+}
+
+.incomingTraySourceValue {
+  opacity: 0.95;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Мобильный фикс для старых .news-card */
+@media (max-width: 768px) {
+  .news-card {
+    box-shadow: inset 0 0 0 1px var(--feed-card-mobile-border) !important;
+    border: none !important;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+}
+
+/* =========================================================
+   НОВЫЙ ПОРТАЛЬНЫЙ ЛЕЙАУТ (главная) — как в категориях
+   ========================================================= */
+
+.portalGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 32px;
+  align-items: start;
+}
+
+.mainCol {
+  min-width: 0;
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+/* Блоки ленты: одна колонка (photo / text / ad) */
+.blocks {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.block {
+  background: transparent;
+}
+
+/* =========================================================
+   Фото‑блоки: крупная, но умеренная сетка NewsCard
+   ========================================================= */
+
+/* Обычные фото‑блоки: две карточки в ряд */
+.photoGrid {
+  display: grid;
+  gap: 24px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+@media (max-width: 900px) {
+  .photoGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Hero-сетка для блока "Главное сейчас":
+   немного больше левая колонка, без растяжения на две строки */
+.photoGrid.heroGrid {
+  grid-template-columns: 1.6fr 1.2fr;
+  grid-auto-rows: auto;
+}
+
+@media (max-width: 900px) {
+  .photoGrid.heroGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* heroMain больше не тянем на две строки, чтобы блок был ниже */
+.photoItem.heroMain {
+  /* оставлено на будущее, сейчас без span */
+}
+
+/* Обёртка вокруг NewsCard */
+.photoItem {
+  /* шириной управляет .photoGrid;
+     высота — через NewsCard.module.css (aspect-ratio и т.п.) */
+}
+
+/* =========================================================
+   Текстовые блоки (списки без фото)
+   ========================================================= */
+
+.textList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.textItem {
+  padding: 8px 0;
+  border-bottom: none;
+}
+
+.textItem:last-child {
+  border-bottom: none;
+}
+
+.textLink {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-decoration: none;
+  color: inherit;
+}
+
+.textTitle {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.textMeta {
+  font-size: 12px;
+  opacity: 0.7;
+}
+
+/* Сообщения в конце ленты */
+.centerNote {
+  margin: 24px 0;
+  text-align: center;
+  font-size: 14px;
+  opacity: 0.7;
 }

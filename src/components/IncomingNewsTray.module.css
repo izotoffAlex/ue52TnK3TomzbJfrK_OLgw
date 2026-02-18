@@ -1,75 +1,216 @@
 /* Путь: frontend/src/components/IncomingNewsTray.module.css
-   Назначение: Стили окна входящих новостей. Высота контейнера анимируется,
-   между карточками фиксированный зазор (--tray-gap). Без «половинчатых» обрезаний. */
+   Назначение: Стили трея (оверлей + карточка).
 
-.trayWrap {
+   FIX (2026-01-29 NEWSLETTER-UI):
+   ✅ Добавлены стили checkboxRow/checkbox/checkboxText (чтобы текст был отодвинут от галочки)
+*/
+
+.overlay {
   position: fixed;
-  right: 16px;
-  bottom: 16px;
+  inset: 0;
   z-index: 9999;
-  width: min(460px, calc(100vw - 32px));
-  color: var(--fg, #fff);
-  background: var(--bg-card, #0f1115);
-  border: 1px solid var(--border, rgba(255,255,255,0.08));
-  border-radius: 14px;
-  box-shadow: 0 10px 26px rgba(0,0,0,0.35);
-  overflow: hidden; /* важно, чтобы невидимые элементы не торчали */
+
+  background: rgba(0, 0, 0, 0);
+
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+
+  padding: 12px 12px max(12px, env(safe-area-inset-bottom)) 12px;
+  box-sizing: border-box;
+}
+
+/* ✅ Для subscribe: по центру */
+.overlayCenter {
+  align-items: center;
+  padding: 12px;
+}
+
+.sheet {
+  width: min(720px, 100%);
+  max-height: min(70vh, 520px);
+
+  background: var(--feed-card-bg, #ffffff);
+  color: var(--feed-fg, #111111);
+
+  border-radius: 16px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+
+  overflow: hidden;
 }
 
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 10px;
+
   padding: 10px 12px;
-  border-bottom: 1px solid var(--border, rgba(255,255,255,0.08));
-  background: var(--bg, #0b0d11);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .title {
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.2;
+  opacity: 0.9;
+
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.closeBtn {
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+
+  font-size: 18px;
+  line-height: 1;
+
+  padding: 6px 8px;
+  border-radius: 10px;
+
+  color: inherit;
+  opacity: 0.85;
+}
+
+.closeBtn:active {
+  transform: scale(0.98);
+}
+
+.list {
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+.rowLink {
+  display: block;
+  padding: 10px 10px;
+  border-radius: 12px;
+  text-decoration: none;
+  color: inherit;
+  font-size: 14px;
+  line-height: 1.25;
+  opacity: 0.95;
+}
+
+.rowLink:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.rowLink:active {
+  transform: translateY(0.5px);
+}
+
+.fallbackRow {
   font-size: 14px;
   opacity: 0.9;
 }
 
-.counter {
-  font-size: 12px;
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: rgba(255,255,255,0.08);
+/* =========================
+   РЕЖИМ "subscribe"
+   ========================= */
+
+.subscribeWrap {
+  padding: 12px;
 }
 
-.listWrap {
-  /* КЛЮЧ: сюда ставим Точную высоту из JS, чтобы не резать карточки */
-  height: auto;
-  will-change: height;
-  transition: height 180ms ease;
-}
-
-.list {
-  --tray-gap: 8px; /* можно переопределить через inline-style */
+.subscribeForm {
   display: flex;
   flex-direction: column;
-  gap: var(--tray-gap);
-  padding: 10px 12px;
+  gap: 10px;
 }
 
-.item { /* фиксированных высот не ставим */ }
-
-.card {
-  display: grid;
+.label {
+  display: flex;
+  flex-direction: column;
   gap: 6px;
-  border: 1px solid var(--border, rgba(255,255,255,0.08));
-  border-radius: 10px;
-  padding: 10px;
-  background: var(--bg-card-2, #12151b);
-}
 
-.cardTitle {
-  font-size: 15px;
-  line-height: 1.3;
-}
-
-.cardMeta {
   font-size: 12px;
-  opacity: 0.7;
+  font-weight: 700;
+  opacity: 0.9;
+}
+
+.input {
+  width: 100%;
+  box-sizing: border-box;
+
+  padding: 10px 12px;
+  border-radius: 12px;
+
+  border: 1px solid rgba(0, 0, 0, 0.14);
+  background: rgba(0, 0, 0, 0.02);
+  color: inherit;
+
+  outline: none;
+}
+
+.input:focus {
+  border-color: rgba(0, 0, 0, 0.28);
+  background: rgba(0, 0, 0, 0.03);
+}
+
+/* ✅ чекбокс + текст */
+.checkboxRow {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* вот это и есть "отодвинуть фразу от галочки" */
+}
+
+.checkbox {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+}
+
+.checkboxText {
+  font-size: 12px;
+  opacity: 0.9;
+  line-height: 1.25;
+}
+
+.policyLink {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.subscribeBtn {
+  border: 0;
+  cursor: pointer;
+
+  padding: 10px 12px;
+  border-radius: 12px;
+
+  font-size: 14px;
+  font-weight: 800;
+
+  background: var(--feed-accent, rgb(249, 200, 92));
+  color: #111111;
+}
+
+.subscribeBtn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.statusOk,
+.statusErr {
+  font-size: 12px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.10);
+  background: rgba(0, 0, 0, 0.03);
+}
+
+.note {
+  font-size: 12px;
+  opacity: 0.75;
 }

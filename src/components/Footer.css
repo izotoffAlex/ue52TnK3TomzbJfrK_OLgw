@@ -1,0 +1,245 @@
+/* Путь: frontend/src/components/Footer.css
+   Назначение: базовая косметика футера + боковые «дымки» как у сайдбаров/хедера.
+   Версия: v3 + адаптация под минималистичный медиа-футер:
+   • ссылки по центру в одну строку (с переносом)
+   • копирайт и юридическая приписка выровнены по центру
+*/
+
+/* Виньетки и тема для футера (site-footer) */
+:root {
+  --footer-maxw: 1120px;
+}
+
+body.theme-graphite {
+  --footer-bg: #0b0c0f;
+  --footer-fg: #e9eef6;
+  --footer-muted: rgba(233, 238, 246, 0.7);
+  --footer-border: #1f2430;
+  --footer-edge: rgba(0, 0, 0, 0.35);
+}
+
+body.theme-white {
+  --footer-bg: #ffffff;
+  --footer-fg: #0f1115;
+  --footer-muted: rgba(15, 17, 21, 0.65);
+  --footer-border: rgba(0, 0, 0, 0.08);
+  --footer-edge: rgba(0, 0, 0, 0.08);
+  /* мягкая центральная дымка для светлой темы */
+  --footer-center-smoke: rgba(0, 0, 0, 0.06);
+}
+
+.site-footer {
+  position: relative;
+  background: var(--footer-bg);
+  color: var(--footer-fg);
+  border-top: 1px solid var(--footer-border);
+  padding: 20px 0 24px;
+  overflow: visible;
+}
+
+.site-footer__inner {
+  max-width: var(--footer-maxw);
+  margin: 0 auto;
+  padding: 0 16px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--footer-muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Строка ссылок */
+.site-footer__links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 24px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.site-footer__links a {
+  color: inherit;
+  text-decoration: none;
+  transition: color 0.2s ease, text-shadow 0.2s ease;
+  white-space: nowrap;
+  font-size: 14px;
+}
+
+.site-footer__links a:hover {
+  color: var(--footer-fg);
+  text-shadow: 0 0 6px rgba(0, 0, 0, 0.08);
+}
+
+.site-footer__loading {
+  font-size: 13px;
+  opacity: 0.7;
+}
+
+/* Нижний блок футера (копирайт + приписка) */
+.site-footer__bottom {
+  text-align: center;
+  max-width: 900px;
+}
+
+.site-footer__copy {
+  margin-top: 4px;
+  font-size: 13px;
+  opacity: 0.85;
+}
+
+.site-footer__legal {
+  margin-top: 4px;
+  font-size: 12px;
+  line-height: 1.4;
+  opacity: 0.7;
+}
+
+/* Боковые виньетки */
+.site-footer::before,
+.site-footer::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 28px;
+  pointer-events: none;
+  z-index: 0; /* под контентом футера */
+}
+@media (max-width: 1024px) {
+  .site-footer::before,
+  .site-footer::after {
+    width: 18px;
+  }
+}
+@media (max-width: 640px) {
+  .site-footer::before,
+  .site-footer::after {
+    width: 14px;
+  }
+}
+
+.site-footer::before {
+  left: 0;
+  background: linear-gradient(to right, var(--footer-edge), rgba(0, 0, 0, 0));
+}
+.site-footer::after {
+  right: 0;
+  background: linear-gradient(to left, var(--footer-edge), rgba(0, 0, 0, 0));
+}
+
+/* ───────────────────────────────────────────────────────────────── */
+/* v3: АНТИ-ПОЛОСЫ — тёмная тема. Делает ВСЕ внутренние подложки и рамки
+   в футере прозрачными/одного цвета, чтобы не было светлых «плашек» по центру. */
+
+body.theme-graphite .site-footer,
+body.theme-graphite .site-footer * {
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+
+/* если у вложенных контейнеров были границы — убираем их */
+body.theme-graphite
+  .site-footer
+  :is(
+    .container,
+    .container-fluid,
+    .row,
+    .wrapper,
+    .inner,
+    .site-footer__inner,
+    .site-footer__links,
+    .site-footer__bottom,
+    .site-footer__copy,
+    .footer-top,
+    .footer-bottom,
+    nav,
+    ul,
+    li,
+    hr,
+    .divider,
+    .line
+  ) {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Гасим псевдоэлементы, рисующие линии */
+body.theme-graphite .site-footer :is(*, *::before, *::after) {
+  background-image: none !important;
+}
+
+/* Сам футер держит свой верхний бордер */
+body.theme-graphite .site-footer {
+  border-top: 1px solid var(--footer-border) !important;
+}
+
+/* Светлая тема — нормализуем hr */
+body.theme-white .site-footer hr {
+  border: 0;
+  height: 0;
+  background: none;
+}
+
+/* ───────────────────────────────────────────────────────────────── */
+/* Светлая тема: центральная мягкая дымка и чуть шире боковые виньетки */
+
+body.theme-white .site-footer {
+  background-color: var(--footer-bg);
+  background-image: radial-gradient(
+    100% 65% at 50% 40%,
+    var(--footer-center-smoke) 0%,
+    rgba(0, 0, 0, 0) 70%
+  );
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  background-position: center;
+}
+
+@media (min-width: 1025px) {
+  body.theme-white .site-footer::before,
+  body.theme-white .site-footer::after {
+    width: 44px;
+  }
+}
+@media (max-width: 1024px) and (min-width: 641px) {
+  body.theme-white .site-footer::before,
+  body.theme-white .site-footer::after {
+    width: 28px;
+  }
+}
+@media (max-width: 640px) {
+  body.theme-white .site-footer::before,
+  body.theme-white .site-footer::after {
+    width: 20px;
+  }
+}
+
+/* Анти-полосы для светлой темы: внутренние контейнеры прозрачные */
+body.theme-white
+  .site-footer
+  :is(
+    .container,
+    .container-fluid,
+    .row,
+    .wrapper,
+    .inner,
+    .site-footer__inner,
+    .site-footer__links,
+    .site-footer__bottom,
+    .site-footer__copy,
+    .footer-top,
+    .footer-bottom,
+    nav,
+    ul,
+    li,
+    hr,
+    .divider,
+    .line
+  ) {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}

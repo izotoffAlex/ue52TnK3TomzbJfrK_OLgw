@@ -1,129 +1,63 @@
-// Путь: frontend/src/components/PasswordField.jsx
-// Назначение: Поле ввода пароля с кнопками «показать/скрыть» и «сгенерировать».
-// Обновления:
-//   ✅ Кнопка-глаз корректно размещена внутри поля (правый край, по центру).
-//   ✅ Поддержка props: required, minLength (по умолчанию 8), onBlur.
-//   ✅ Внешний API НЕ изменён (value/onChange как раньше).
+/* Путь: frontend/src/components/PasswordField.jsx
+   Назначение: Поле пароля с кнопкой показать/скрыть + генератор пароля.
+   Важно: стили через CSS-модуль и переменные темы (светлая/тёмная). */
 
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
+import styles from "./PasswordField.module.css";
+
+function genPassword(len = 12) {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%^&*";
+  let s = "";
+  for (let i = 0; i < len; i++) s += chars[Math.floor(Math.random() * chars.length)];
+  return s;
+}
 
 export default function PasswordField({
   value,
   onChange,
   placeholder = "Пароль",
-  id = "password",
-  name = "password",
-  required = true,
-  minLength = 8,
-  onBlur,
+  disabled = false,
+  showGenerate = true,
 }) {
   const [show, setShow] = useState(false);
-
-  function generatePassword() {
-    const upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    const lower = "abcdefghijklmnopqrstuvwxyz";
-    const digits = "0123456789";
-    const symbols = "!@#$%^&*-_=+?";
-    const all = upper + lower + digits + symbols;
-    const pick = (str) => str[Math.floor(Math.random() * str.length)];
-
-    const must = [pick(upper), pick(lower), pick(digits), pick(symbols)];
-    let rest = "";
-    for (let i = 0; i < Math.max(10, minLength - must.length); i++) rest += pick(all);
-
-    const arr = (must.join("") + rest).split("");
-    for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
-    const pwd = arr.join("");
-    onChange({ target: { name, value: pwd } });
-  }
-
-  const HEIGHT = 44;
-  const RADIUS = 12;
+  const type = useMemo(() => (show ? "text" : "password"), [show]);
 
   return (
-    <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "1fr auto",
-        columnGap: 8,
-        alignItems: "stretch",
-        width: "100%",
-      }}
-    >
-      {/* Поле пароля + иконка */}
-      <div style={{ position: "relative", width: "100%" }}>
+    <div className={styles.row}>
+      <div className={styles.inputWrap}>
         <input
-          id={id}
-          name={name}
-          type={show ? "text" : "password"}
+          className={styles.input}
+          type={type}
           value={value}
-          onChange={onChange}
-          onBlur={onBlur}
+          onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
+          disabled={disabled}
           autoComplete="new-password"
-          required={required}
-          minLength={minLength}
-          style={{
-            width: "100%",
-            height: HEIGHT,
-            padding: `0 ${HEIGHT}px 0 12px`,
-            borderRadius: RADIUS,
-            border: "1px solid #2b3551",
-            background: "#0a0f1a",
-            color: "#e6eefc",
-            outline: "none",
-          }}
         />
 
         <button
           type="button"
+          className={styles.eyeBtn}
           onClick={() => setShow((s) => !s)}
-          aria-pressed={show}
           title={show ? "Скрыть пароль" : "Показать пароль"}
-          style={{
-            position: "absolute",
-            top: "50%",
-            right: 8,
-            transform: "translateY(-50%)",
-            width: HEIGHT - 8,
-            height: HEIGHT - 8,
-            display: "inline-flex",
-            alignItems: "center",
-            justifyContent: "center",
-            borderRadius: 10,
-            border: "1px solid #2b3551",
-            background: "#0f1629",
-            color: "#e6eefc",
-            cursor: "pointer",
-            userSelect: "none",
-          }}
+          aria-label={show ? "Скрыть пароль" : "Показать пароль"}
         >
-          {show ? "👁‍🗨" : "👁"}
+          {show ? "🙈" : "👁️"}
         </button>
       </div>
 
-      {/* Кнопка генерации */}
-      <button
-        type="button"
-        onClick={generatePassword}
-        title="Сгенерировать пароль"
-        style={{
-          height: HEIGHT,
-          padding: "0 12px",
-          borderRadius: RADIUS - 4,
-          border: "1px solid #2b3551",
-          background: "#0f1629",
-          color: "#e6eefc",
-          cursor: "pointer",
-          whiteSpace: "nowrap",
-          fontWeight: 600,
-        }}
-      >
-        Сгенерировать
-      </button>
+      {showGenerate ? (
+        <button
+          type="button"
+          className={styles.genBtn}
+          onClick={() => onChange(genPassword(12))}
+          disabled={disabled}
+          title="Сгенерировать пароль"
+        >
+          Сгенерировать
+        </button>
+      ) : null}
     </div>
   );
 }
+
