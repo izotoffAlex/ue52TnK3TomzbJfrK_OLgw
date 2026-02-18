@@ -1584,25 +1584,28 @@ const izotovCommentHtml = hasIzotovComment
                 </div>
               ) : null}
 
-              <nav className={s.breadcrumbsHidden} aria-label="Хлебные крошки">
-  <Link to="/" style={{ textDecoration: "none" }}>
-    <span>Главная</span>
-  </Link>
-  <span> · </span>
-  <Link to={breadcrumbUrl} style={{ textDecoration: "none" }}>
-    {breadcrumbTitle}
-  </Link>
-  {authorCrumb && authorUrl ? (
-    <>
-      <span> · </span>
-      <Link to={authorUrl} style={{ textDecoration: "none" }}>
-        {authorCrumb.title}
-      </Link>
-    </>
-  ) : null}
-  <span> · </span>
-  <span>{buildPrettyTitle(titleMain || item.title)}</span>
-</nav>
+              {!HIDE_UI_BREADCRUMBS && (
+  <nav className={s.breadcrumbsHidden} aria-label="Хлебные крошки">
+    <Link to="/" style={{ textDecoration: "none" }}>
+      <span>Главная</span>
+    </Link>
+    <span> · </span>
+    <Link to={breadcrumbUrl} style={{ textDecoration: "none" }}>
+      {breadcrumbTitle}
+    </Link>
+    {authorCrumb && authorUrl ? (
+      <>
+        <span> · </span>
+        <Link to={authorUrl} style={{ textDecoration: "none" }}>
+          {authorCrumb.title}
+        </Link>
+      </>
+    ) : null}
+    <span> · </span>
+    <span>{buildPrettyTitle(titleMain || item.title)}</span>
+  </nav>
+)}
+
 
               <MetaInfo
                 datePretty={datePretty}

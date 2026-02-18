@@ -4,6 +4,11 @@
    FIX (2026-02-17 CARD SIZE TUNED):
    - Базовый размер через aspect-ratio у .mediaWrap (3:2).
    - Модификатор .cardLarge делает карточку чуть выше (4:3), а не квадратной.
+
+   FIX (2026-02-18 META ALIGN):
+   - .body — flex-колонка.
+   - .content — внутренний flex-блок для текста.
+   - .meta прижата к низу карточки через margin-top: auto.
 */
 
 /* === Токены под темы (графит + белая) === */
@@ -105,6 +110,13 @@ body.theme-white,
   gap: 8px;
 }
 
+/* Внутренний блок: заголовок + автор + источник */
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
 /* === Заголовок === */
 .title {
   font-size: 16px;
@@ -123,7 +135,7 @@ body.theme-white,
   color: var(--accent);
 }
 
-/* === Источник === */
+/* === Источник (текстовая строка, когда нет картинки) === */
 .sourceLine {
   display: inline-flex;
   align-items: center;
@@ -148,6 +160,7 @@ body.theme-white,
 
 /* === Метаданные === */
 .meta {
+  margin-top: auto; /* прижимаем категорию+дату к низу тела карточки */
   display: flex;
   align-items: center;
   gap: 10px;

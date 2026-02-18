@@ -5,6 +5,10 @@
 // - Добавлен проп size ("normal" | "large").
 // - Для size="large" используется модификатор .cardLarge (более высокая карточка).
 // - Используется общий CSS NewsCard.module.css.
+//
+// FIX (2026-02-18 META ALIGN INSIDE):
+// - Внутри .body добавлен flex-контейнер .content для текста.
+// - .meta всегда последний блок и прижимается к низу через CSS.
 
 import React, {
   useMemo,
@@ -365,32 +369,37 @@ export default function NewsCard({
       </Link>
 
       <div className={`${s.body} body`}>
-        <h3 className={`${s.title} title`}>
-          <Link to={detailTo}>
-            {titleParts.map((part, idx) => (
-              <React.Fragment key={idx}>
-                {part}
-                {idx < titleParts.length - 1 && <br />}
-              </React.Fragment>
-            ))}
-          </Link>
-        </h3>
-
-        {authorHref ? (
-          <div style={{ marginTop: 6, fontSize: 13, opacity: 0.9 }}>
-            Автор:{" "}
-            <Link to={authorHref} style={{ color: "var(--accent, #fbbf24)" }}>
-              {authorTitle}
+        <div className={s.content}>
+          <h3 className={`${s.title} title`}>
+            <Link to={detailTo}>
+              {titleParts.map((part, idx) => (
+                <React.Fragment key={idx}>
+                  {part}
+                  {idx < titleParts.length - 1 && <br />}
+                </React.Fragment>
+              ))}
             </Link>
-          </div>
-        ) : null}
+          </h3>
 
-        {!hasVisualMedia ? (
-          <div className={s.sourceLine}>
-            <span className={s.sourceDot} />
-            <span className={s.sourceText}>{source.name}</span>
-          </div>
-        ) : null}
+          {authorHref ? (
+            <div style={{ marginTop: 6, fontSize: 13, opacity: 0.9 }}>
+              Автор:{" "}
+              <Link
+                to={authorHref}
+                style={{ color: "var(--accent, #fbbf24)" }}
+              >
+                {authorTitle}
+              </Link>
+            </div>
+          ) : null}
+
+          {!hasVisualMedia ? (
+            <div className={s.sourceLine}>
+              <span className={s.sourceDot} />
+              <span className={s.sourceText}>{source.name}</span>
+            </div>
+          ) : null}
+        </div>
 
         <div className={s.meta}>
           {categoryDisplayName ? (

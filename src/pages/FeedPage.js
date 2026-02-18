@@ -1,12 +1,11 @@
 // Путь: frontend/src/pages/FeedPage.js
 // Назначение: Главная лента IzotovLife в портальном стиле.
 //
-// Структура:
-//   🔹 Hero-блок "Главное сейчас" с крупной карточкой (size="large")
-//   🔹 Блок "Свежие новости" (текстовый)
-//   🔹 Далее — смешанные фото/текст-блоки (как в категориях)
-//
-// Логика загрузки/кэширования/дедупликации сохранена из прежней версии.
+// ВАРИАНТ С ФИКСОМ:
+//   - вместо связки fetchNews + fetchNewsFeedImages используется единая лента fetchNewsFeedText
+//   - текстовые и фото‑новости подгружаются бесконечно, пока backend отдаёт next
+//   - разделение на фото/текст делается как в CategoryPage
+//   - исключена ситуация, когда лента живёт только за счёт фото при отсутствии текста
 
 import React, {
   useState,
@@ -18,7 +17,7 @@ import React, {
 import { Link } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 
-import { fetchNews, fetchNewsFeedImages } from "../Api";
+import { fetchNewsFeedText } from "../Api";
 import SourceLabel from "../components/SourceLabel";
 import NewsCard from "../components/NewsCard";
 import IncomingNewsTray from "../components/IncomingNewsTray";
@@ -92,20 +91,6 @@ function writeFeedCache(photo, text) {
 /* =========================
    helpers
    ========================= */
-
-function normalizeFeedPayload(data) {
-  if (!data) return [];
-  if (Array.isArray(data)) return data;
-  if (Array.isArray(data.results)) return data.results;
-  if (Array.isArray(data.items)) return data.items;
-
-  if (data && typeof data === "object") {
-    for (const v of Object.values(data)) {
-      if (Array.isArray(v) && v.length) return v;
-    }
-  }
-  return [];
-}
 
 function stripHtmlFast(htmlOrText) {
   const s0 = String(htmlOrText || "");
@@ -232,8 +217,6 @@ export default function FeedPage() {
   const [hasMore, setHasMore] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
 
-  const pageImagesRef = useRef(1);
-  const pageTextRef = useRef(1);
   const loadingRef = useRef(false);
 
   const seenPhotoKeysRef = useRef(new Set());
@@ -253,6 +236,8 @@ export default function FeedPage() {
   const [subscribeOpen, setSubscribeOpen] = useState(false);
   const subscribeTimerRef = useRef(0);
 
+  const pageRef = useRef(1);
+
   useEffect(() => {
     hasMoreRef.current = Boolean(hasMore);
   }, [hasMore]);
@@ -268,15 +253,11 @@ export default function FeedPage() {
 
   const [dbg, setDbg] = useState({
     lastMode: "",
-    imgReqPage: 0,
     txtReqPage: 0,
-    imgRawLen: 0,
     txtRawLen: 0,
     imgAdded: 0,
     txtAdded: 0,
-    imgNext: "",
     txtNext: "",
-    combinedHasNext: null,
     hasMore: true,
     userHasScrolled: false,
     autoFillBudget: 2,
@@ -400,24 +381,6 @@ export default function FeedPage() {
     return `/${safeCat}/${safeSlug}/`;
   }, []);
 
-  const dedupeInto = useCallback(
-    (list, seenSet) => {
-      const out = [];
-      for (const item of list) {
-        const k = getKey(item);
-        if (!k) {
-          out.push(item);
-          continue;
-        }
-        if (seenSet.has(k)) continue;
-        seenSet.add(k);
-        out.push(item);
-      }
-      return out;
-    },
-    [getKey]
-  );
-
   const updateDebug = useCallback(
     (patch) => {
       if (!debug) return;
@@ -461,221 +424,97 @@ export default function FeedPage() {
       setIsLoading(true);
       updateDebug({ lastMode: mode, lastError: "" });
 
-      const IMG_PAGE_SIZE = 20;
-      const TXT_PAGE_SIZE = 20;
+      const TXT_PAGE_SIZE = 30;
 
-      const TEXT_MIN_FIRST_LOAD = 20;
-      const TEXT_MIN_ADD_PER_APPEND = 12;
-      const TEXT_MAX_PAGES_PER_APPEND = 6;
-
-      const currentImagesPage = mode === "replace" ? 1 : pageImagesRef.current;
-      const startTextPage = mode === "replace" ? 1 : pageTextRef.current;
+      const currentPage = mode === "replace" ? 1 : pageRef.current;
 
       try {
         if (mode === "replace") {
           setHasMore(true);
+          hasMoreRef.current = true;
           autoFillBudgetRef.current = 2;
           lastAppendAtRef.current = 0;
           updateDebug({ lastMode: "replace" });
         }
 
-        let imagesPayload = null;
-        let textPayloadFirst = null;
-        let usedFallbackCombined = false;
+        const payload = await fetchNewsFeedText({
+          page: currentPage,
+          page_size: TXT_PAGE_SIZE,
+        });
 
-        try {
-          [imagesPayload, textPayloadFirst] = await Promise.all([
-            fetchNewsFeedImages({
-              page: currentImagesPage,
-              page_size: IMG_PAGE_SIZE,
-            }),
-            fetchNews(startTextPage, TXT_PAGE_SIZE),
-          ]);
-        } catch {
-          usedFallbackCombined = true;
-          const fallbackData = await fetchNews(
-            currentImagesPage,
-            Math.max(IMG_PAGE_SIZE, TXT_PAGE_SIZE)
-          );
-          imagesPayload = fallbackData;
-          textPayloadFirst = fallbackData;
-        }
+        const rawList = Array.isArray(payload?.results)
+          ? payload.results
+          : [];
 
-        const rawImagesList = normalizeFeedPayload(imagesPayload);
-        const rawTextFirstList = normalizeFeedPayload(textPayloadFirst);
+        const normalized = rawList
+          .map(normalizeImageFields)
+          .map(toTitleParts);
 
-        const imagesCandidate = rawImagesList.map(normalizeImageFields);
+        const valid = normalized.filter(hasSomeText);
 
-        let imagesValid = imagesCandidate.filter(hasSomeText);
-        if (!imagesValid.length && imagesCandidate.length)
-          imagesValid = imagesCandidate;
+        const withPhoto = valid.filter(hasValidImage);
+        const withoutPhoto = valid.filter((n) => !hasValidImage(n));
 
-        const imagesUnique =
-          mode === "replace"
-            ? imagesValid
-            : dedupeInto(imagesValid, seenPhotoKeysRef.current);
-
-        let cardsBatch = imagesUnique.filter(hasValidImage);
-        if (!cardsBatch.length) cardsBatch = imagesUnique;
-
-        const withPhotoProcessed = cardsBatch.map(toTitleParts);
-
-        const photoExcludeSet = (() => {
-          const s0 = new Set();
-          for (const n of withPhotoProcessed) {
-            const k = getKey(n);
-            if (k) s0.add(k);
-          }
-          return s0;
-        })();
-
-        const buildTextBatchFromRaw = (rawList, modeLocal) => {
-          let textCandidate = rawList.filter(hasSomeText);
-          if (!textCandidate.length && rawList.length) textCandidate = rawList;
-
-          let filtered = textCandidate;
-          if (photoExcludeSet && photoExcludeSet.size) {
-            filtered = textCandidate.filter((n) => {
-              const k = getKey(n);
-              if (!k) return true;
-              return !photoExcludeSet.has(k);
-            });
-          }
-
-          const preferNoImg = filtered.filter((n) => !hasValidImage(n));
-          const withImg = filtered.filter((n) => hasValidImage(n));
-          const ordered = preferNoImg.concat(withImg);
-
-          if (modeLocal === "replace") {
-            const tmp = new Set();
-            const out = [];
-            for (const n of ordered) {
-              const k = getKey(n);
-              if (k) {
-                if (tmp.has(k)) continue;
-                tmp.add(k);
-              }
-              out.push(n);
-            }
-            return out.map(toTitleParts);
-          }
-
-          return dedupeInto(ordered, seenTextKeysRef.current).map(toTitleParts);
-        };
-
-        let collectedTextProcessed = buildTextBatchFromRaw(
-          rawTextFirstList,
-          mode
+        const seen = new Set(
+          (mode === "replace" ? [] : photoNews)
+            .map((n) => n?.id ?? n?.slug ?? null)
+            .concat(
+              (mode === "replace" ? [] : textNews).map(
+                (n) => n?.id ?? n?.slug ?? null
+              )
+            )
+            .filter(Boolean)
         );
 
-        let lastTextPayload = textPayloadFirst;
-        let textPageCursor = startTextPage;
+        const uniquePhoto = withPhoto.filter(
+          (n) => !seen.has(n?.id ?? n?.slug ?? null)
+        );
+        const uniqueText = withoutPhoto.filter(
+          (n) => !seen.has(n?.id ?? n?.slug ?? null)
+        );
 
-        if (!usedFallbackCombined) {
-          const needMin =
-            mode === "replace" ? TEXT_MIN_FIRST_LOAD : TEXT_MIN_ADD_PER_APPEND;
-
-          let guard = 0;
-
-          const hasTextNextStrong = (p, rawList) => {
-            const hasNext = Boolean(p && p.next);
-            const hasLen =
-              Array.isArray(rawList) && rawList.length >= TXT_PAGE_SIZE;
-            return hasNext || hasLen;
-          };
-
-          let hasTextNext = hasTextNextStrong(lastTextPayload, rawTextFirstList);
-
-          while (
-            collectedTextProcessed.length < needMin &&
-            hasTextNext &&
-            guard < TEXT_MAX_PAGES_PER_APPEND
-          ) {
-            guard += 1;
-            const nextPage = textPageCursor + 1;
-
-            try {
-              const nextPayload = await fetchNews(nextPage, TXT_PAGE_SIZE);
-              lastTextPayload = nextPayload;
-
-              const rawNext = normalizeFeedPayload(nextPayload);
-              const batchNext = buildTextBatchFromRaw(rawNext, "append");
-              if (batchNext.length) {
-                collectedTextProcessed =
-                  collectedTextProcessed.concat(batchNext);
-              }
-
-              textPageCursor = nextPage;
-              hasTextNext = hasTextNextStrong(nextPayload, rawNext);
-            } catch {
-              break;
-            }
-          }
-        }
-
-        if (currentImagesPage === 1) {
-          const top =
-            withPhotoProcessed[0] || collectedTextProcessed[0] || null;
+        if (currentPage === 1) {
+          const top = uniquePhoto[0] || uniqueText[0] || null;
           if (top) lastTopKeyRef.current = getKey(top);
         }
 
-        const imgHasNext =
-          Boolean(imagesPayload && imagesPayload.next) ||
-          rawImagesList.length >= IMG_PAGE_SIZE;
-
-        const rawTextLastList = normalizeFeedPayload(lastTextPayload);
-        const txtHasNext = usedFallbackCombined
-          ? Boolean(textPayloadFirst && textPayloadFirst.next) ||
-            rawTextFirstList.length >= TXT_PAGE_SIZE
-          : Boolean(lastTextPayload && lastTextPayload.next) ||
-            rawTextLastList.length >= TXT_PAGE_SIZE;
-
-        const combinedHasNext = Boolean(imgHasNext || txtHasNext);
-
         updateDebug({
-          imgReqPage: currentImagesPage,
-          txtReqPage: startTextPage,
-          imgRawLen: rawImagesList.length,
-          txtRawLen: rawTextFirstList.length,
-          imgAdded: withPhotoProcessed.length,
-          txtAdded: collectedTextProcessed.length,
-          imgNext: String((imagesPayload && imagesPayload.next) || ""),
-          txtNext: String((lastTextPayload && lastTextPayload.next) || ""),
-          combinedHasNext,
+          txtReqPage: currentPage,
+          txtRawLen: rawList.length,
+          imgAdded: uniquePhoto.length,
+          txtAdded: uniqueText.length,
+          txtNext: String(payload?.next || ""),
         });
 
         if (mode === "replace") {
-          setPhotoNews(withPhotoProcessed);
-          setTextNews(collectedTextProcessed);
+          setPhotoNews(uniquePhoto);
+          setTextNews(uniqueText);
 
-          rebuildSeenSets(withPhotoProcessed, collectedTextProcessed);
-          writeFeedCache(withPhotoProcessed, collectedTextProcessed);
-
-          pageImagesRef.current = 2;
-          pageTextRef.current = textPageCursor + 1;
-
-          setHasMore(combinedHasNext);
+          rebuildSeenSets(uniquePhoto, uniqueText);
+          writeFeedCache(uniquePhoto, uniqueText);
         } else {
-          if (withPhotoProcessed.length)
-            setPhotoNews((prev) => [...prev, ...withPhotoProcessed]);
-          if (collectedTextProcessed.length)
-            setTextNews((prev) => [...prev, ...collectedTextProcessed]);
+          if (uniquePhoto.length)
+            setPhotoNews((prev) => [...prev, ...uniquePhoto]);
+          if (uniqueText.length)
+            setTextNews((prev) => [...prev, ...uniqueText]);
 
-          pageImagesRef.current = currentImagesPage + 1;
-          pageTextRef.current = textPageCursor + 1;
-
-          if (!combinedHasNext) {
-            setHasMore(false);
-            return;
-          }
-
-          setHasMore(true);
+          const allPhoto = (photoNews || []).concat(uniquePhoto);
+          const allText = (textNews || []).concat(uniqueText);
+          rebuildSeenSets(allPhoto, allText);
+          writeFeedCache(allPhoto, allText);
         }
+
+        const more = Boolean(payload?.next) && valid.length > 0;
+        setHasMore(more);
+        hasMoreRef.current = more;
+
+        pageRef.current = currentPage + 1;
       } catch (e) {
         updateDebug({
           lastError: String(e && e.message ? e.message : e),
         });
         setHasMore(false);
+        hasMoreRef.current = false;
       } finally {
         loadingRef.current = false;
         setIsLoading(false);
@@ -683,10 +522,11 @@ export default function FeedPage() {
     },
     [
       canAppendNow,
-      dedupeInto,
       getKey,
       hasSomeText,
       hasValidImage,
+      photoNews,
+      textNews,
       rebuildSeenSets,
       updateDebug,
     ]
@@ -699,8 +539,7 @@ export default function FeedPage() {
       setTextNews(cached.text);
       rebuildSeenSets(cached.photo, cached.text);
 
-      pageImagesRef.current = 2;
-      pageTextRef.current = 2;
+      pageRef.current = 2;
 
       setIsLoading(false);
 
@@ -715,8 +554,10 @@ export default function FeedPage() {
     if (DISABLE_FRESH_NEWS_TRAY) return;
 
     try {
-      const data = await fetchNews(1, 20);
-      const results = normalizeFeedPayload(data).map(normalizeImageFields);
+      const data = await fetchNewsFeedText({ page: 1, page_size: 20 });
+      const results = (Array.isArray(data?.results) ? data.results : []).map(
+        normalizeImageFields
+      );
 
       const valid = results.filter(hasSomeText);
       if (!valid.length) return;
@@ -880,41 +721,26 @@ export default function FeedPage() {
     }
   }, []);
 
-  // ===== Формирование портальных блоков =====
-
-  const heroPhotoItems = useMemo(
-    () => (Array.isArray(photoNews) ? photoNews.slice(0, 3) : []),
-    [photoNews]
-  );
-  const restPhotoItems = useMemo(
-    () => (Array.isArray(photoNews) ? photoNews.slice(3) : []),
-    [photoNews]
-  );
-
-  const firstTextBlockItems = useMemo(
-    () => (Array.isArray(textNews) ? textNews.slice(0, 7) : []),
-    [textNews]
-  );
-  const restTextItems = useMemo(
-    () => (Array.isArray(textNews) ? textNews.slice(7) : []),
-    [textNews]
-  );
+  // ===== Формирование портальных блоков (как в CategoryPage) =====
 
   const mixedBlocks = useMemo(() => {
-    const photos = restPhotoItems;
-    const texts = restTextItems;
+    const photos = Array.isArray(photoNews) ? photoNews : [];
+    const texts = Array.isArray(textNews) ? textNews : [];
 
     const blocks = [];
     let pi = 0;
     let ti = 0;
+
     const PHOTO_CHUNK = 3;
     const TEXT_CHUNK = 7;
+
     let mode = "photo";
 
     while (pi < photos.length || ti < texts.length) {
       if (mode === "photo") {
         const chunk = photos.slice(pi, pi + PHOTO_CHUNK);
-        if (chunk.length) {
+        // не продолжаем бесконечный хвост фото, если текстов нет
+        if (chunk.length && texts.length > 0) {
           blocks.push({ kind: "photo", items: chunk });
           pi += chunk.length;
         }
@@ -925,15 +751,18 @@ export default function FeedPage() {
           blocks.push({ kind: "text", items: chunk });
           ti += chunk.length;
         } else {
-          mode = "photo";
-          continue;
+          // текст закончился — выходим, чтобы не было хвоста только из фото
+          break;
         }
         mode = "photo";
       }
     }
 
     return blocks;
-  }, [restPhotoItems, restTextItems]);
+  }, [photoNews, textNews]);
+
+  const totalShown = photoNews.length + textNews.length;
+  const showEmpty = totalShown === 0 && !hasMore && !isLoading;
 
   return (
     <div className={s["feed-page"]} ref={feedWrapRef}>
@@ -969,22 +798,16 @@ export default function FeedPage() {
               {String(isLoading)}
             </div>
             <div>
-              pages: imgRef={pageImagesRef.current} txtRef={
-                pageTextRef.current
-              }{" "}
-              | req img={dbg.imgReqPage} txt={dbg.txtReqPage}
+              txtPageRef={pageRef.current} | req txt={dbg.txtReqPage}
             </div>
             <div>
-              rawLen: img={dbg.imgRawLen} txt={dbg.txtRawLen} | added: img={
-                dbg.imgAdded
-              }{" "}
-              txt={dbg.txtAdded}
+              rawLen: txt={dbg.txtRawLen} | added: img={dbg.imgAdded} txt={
+                dbg.txtAdded
+              }
             </div>
             <div>
-              next: img={dbg.imgNext ? "yes" : "no"} txt={
-                dbg.txtNext ? "yes" : "no"
-              }{" "}
-              | combinedHasNext: {String(dbg.combinedHasNext)}
+              next: txt={dbg.txtNext ? "yes" : "no"} | hasMore:{" "}
+              {String(dbg.hasMore)}
             </div>
             <div>
               userScrolled: {String(dbg.userHasScrolled)} | autoFillBudget:{" "}
@@ -995,108 +818,60 @@ export default function FeedPage() {
 
         <div className={s.portalGrid}>
           <main className={s.mainCol}>
+            {/* sentinel для infinite scroll */}
             <div ref={sentinelRef} style={{ height: 1 }} />
 
-            {/* HERO-БЛОК "ГЛАВНОЕ СЕЙЧАС" */}
-            {heroPhotoItems.length > 0 && (
-              <section className={s.block}>
-                <h2 className={s.sectionTitle}>Главное сейчас</h2>
-                <div className={`${s.photoGrid} ${s.heroGrid}`}>
-                  {heroPhotoItems.map((item, i) => (
-                    <div
-                      key={`hero-${item.id ?? item.slug ?? i}`}
-                      className={
-                        i === 0 ? `${s.photoItem} ${s.heroMain}` : s.photoItem
-                      }
-                    >
-                      <NewsCard item={item} size="large" />
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {/* ПЕРВЫЙ ТЕКСТОВЫЙ БЛОК "СВЕЖИЕ НОВОСТИ" */}
-            {firstTextBlockItems.length > 0 && (
-              <section className={s.block}>
-                <h2 className={s.sectionTitle}>Свежие новости</h2>
-                <ul className={s.textList}>
-                  {firstTextBlockItems.map((n, i) => (
-                    <li
-                      key={`first-text-${n.id ?? n.slug ?? i}`}
-                      className={s.textItem}
-                    >
-                      <Link to={buildSeoUrl(n)} className={s.textLink}>
-                        <span className={s.textTitle}>
-                          {n.titleParts ? n.titleParts[0] : n.title}
-                        </span>
-                        <span className={s.textMeta}>
-                          <SourceLabel item={n} />
-                        </span>
-                      </Link>
-                    </li>
-                  ))}
-                </ul>
-              </section>
-            )}
-
-            {/* ОСНОВНАЯ ЛЕНТА: СМЕШАННЫЕ БЛОКИ */}
-            <div className={s.blocks}>
-              {mixedBlocks.map((b, idx) => {
-                if (b.kind === "photo") {
-                  return (
-                    <section key={`b-photo-${idx}`} className={s.block}>
-                      <div className={s.photoGrid}>
-                        {b.items.map((item, i) => (
-                          <div
-                            key={`p-${item.id ?? item.slug ?? `${idx}-${i}`}`}
-                            className={s.photoItem}
-                          >
+            {showEmpty ? (
+              <div className={s.centerNote}>Пока ничего нет.</div>
+            ) : (
+              <div className={s.blocks}>
+                {mixedBlocks.map((b, idx) => {
+                  if (b.kind === "photo") {
+                    return (
+                      <section key={`b-photo-${idx}`} className={s.block}>
+                        <div className={s.photoGrid}>
+                          {b.items.map((item, i) => (
                             <NewsCard
+                              key={`p-${item.id ?? item.slug ?? `${idx}-${i}`}`}
                               item={item}
-                              // здесь оставляем обычный размер
-                              size="normal"
                             />
-                          </div>
+                          ))}
+                        </div>
+                      </section>
+                    );
+                  }
+
+                  return (
+                    <section key={`b-text-${idx}`} className={s.block}>
+                      <ul className={s.textList}>
+                        {b.items.map((n, i) => (
+                          <li
+                            key={`t-${n.id ?? n.slug ?? `${idx}-${i}`}`}
+                            className={s.textItem}
+                          >
+                            <Link to={buildSeoUrl(n)} className={s.textLink}>
+                              <span className={s.textTitle}>
+                                {n.titleParts ? n.titleParts[0] : n.title}
+                              </span>
+                              <span className={s.textMeta}>
+                                <SourceLabel item={n} />
+                              </span>
+                            </Link>
+                          </li>
                         ))}
-                      </div>
+                      </ul>
                     </section>
                   );
-                }
+                })}
 
-                return (
-                  <section key={`b-text-${idx}`} className={s.block}>
-                    <ul className={s.textList}>
-                      {b.items.map((n, i) => (
-                        <li
-                          key={`t-${n.id ?? n.slug ?? `${idx}-${i}`}`}
-                          className={s.textItem}
-                        >
-                          <Link
-                            to={buildSeoUrl(n)}
-                            className={s.textLink}
-                          >
-                            <span className={s.textTitle}>
-                              {n.titleParts ? n.titleParts[0] : n.title}
-                            </span>
-                            <span className={s.textMeta}>
-                              <SourceLabel item={n} />
-                            </span>
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
-                  </section>
-                );
-              })}
-
-              {!hasMore && (
-                <div className={s.centerNote}>Больше новостей нет</div>
-              )}
-              {isLoading && hasMore && (
-                <div className={s.centerNote}>Загрузка…</div>
-              )}
-            </div>
+                {!hasMore && !isLoading && totalShown > 0 && (
+                  <div className={s.centerNote}>Больше новостей нет</div>
+                )}
+                {isLoading && (
+                  <div className={s.centerNote}>Загрузка…</div>
+                )}
+              </div>
+            )}
           </main>
         </div>
 
