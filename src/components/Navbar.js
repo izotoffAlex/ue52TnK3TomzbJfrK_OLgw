@@ -1,67 +1,32 @@
 // Путь: frontend/src/components/Navbar.js
-// Назначение: шапка IzotovLife (логотип, бегущая строка, поиск, категории, меню, кнопки).
+// Назначение:
+//   Адаптивная фиксированная шапка IzotovLife:
+//   - логотип / переход на главную
+//   - бегущая строка с курсами и погодой
+//   - поиск в поповере
+//   - кнопка "Предложить новость"
+//   - кнопка "Гороскоп"
+//   - иконка аккаунта (вход/регистрация/кабинет/админка)
+//   - бургер-меню справа с вертикальным списком категорий и кнопкой "Показать ещё"
 //
-// ОБНОВЛЕНИЕ (2026-01-02):
-// ✅ Десктоп: категории по центру, пункт "Ещё" стоит рядом (не у края экрана)
-// ✅ Мобильные/узкие экраны: показываем ТОЛЬКО категории, которые помещаются по ширине + "Ещё"
-// ✅ Сортировка категорий: первыми идут самые большие по количеству новостей (через count API)
-// ✅ Ничего из функций шапки не удалено: поиск, тикер, меню, "предложить новость", гороскоп, выпадающий список "Ещё" с обложками.
-//
-// FIX (2026-01-04B):
-// ✅ Сжатие шапки срабатывает и при прокрутке внутри контейнера (#root), а не только window.scrollY.
-// ✅ rAF + гистерезис, чтобы не мигало возле порога.
-//
-// FIX (2026-01-04C):
-// ✅ Удалена случайно вставленная строка "t;" (ломала сборку ESLint).
-//
-// FIX (2026-01-04D):
-// ✅ Убрали "залп" запросов, который приводил к 429 Too Many Requests (counts кеш/лимиты).
-//
-// FIX (2026-01-04E):
-// ✅ Главная проблема: обрезается верх ленты/карточек из-за fixed navbar.
-// ✅ Решение: Navbar измеряет свою высоту и пишет CSS-переменную --navbar-offset,
-//    а глобальные стили дают body padding-top = --navbar-offset.
-//
-// FIX (2026-01-06):
-// ✅ Бегущая строка (курсы+погода):
-//    - двигается только если контент шире контейнера
-//    - по клику плавно возвращается в начало
-//    - после возврата стоит на паузе ~2 секунды
-//
-// FIX (2026-01-09):
-// ✅ Тикер: разделитель стоит ТОЛЬКО в конце (|), и у него маленькие одинаковые отступы.
-//
-// FIX (2026-01-09-WHITE-THEME):
-// ✅ Белая тема корректно применяется через классы/атрибуты (см. FIX 2026-02-15-LIGHT-ONLY ниже).
-//
-// ДОБАВЛЕНО (2026-02-06):
-// ✅ FIX: категория "Авторские материалы" должна появляться в шапке всегда.
-// ✅ Причина: на локалке реальный endpoint категорий: /api/categories/ (а /api/news/categories/ может отсутствовать).
-// ✅ Решение:
-//    1) Если fetchCategories() вернул пусто/ошибку — делаем fallback запрос на /api/categories/?page_size=200
-//    2) Если в данных категория slug=avtorskie-materialy, но name англ. — заменяем UI name на "Авторские материалы"
-//    3) Если такой категории нет вообще — добавляем "виртуальную" категорию (кнопка ведёт на /avtorskie-materialy/)
-//    4) Для виртуальной категории не грузим counts и обложки (никаких лишних запросов / 404)
-//
-// FIX (2026-02-15-AUTHOR-ROUTE):
-// ✅ Клики по "Авторские материалы" всегда ведут на /avtorskie-materialy/
-//    (и в основной полосе, и в выпадающем "Ещё").
-//
-// FIX (2026-02-15-LIGHT-ONLY):
-// ✅ Убрали переключатель темы из шапки.
-// ✅ Зафиксировали только светлую тему (черный текст на белом фоне), без hotkeys и без переключения.
-//
-// FIX (2026-02-16-ADMIN-CABINET):
-// ✅ Суперпользователь на фронте не видит "Личный кабинет автора" и не попадает в него.
-// ✅ В боковом меню для суперпользователя показывается пункт "Админка", ведущий в /admin/.
-// ✅ handlePersonalCabinet(): суперпользователь всегда уходит в Django admin, обычные роли — в свои кабинеты.
-//
-// FIX (2026-02-16-ADMIN-PREFERRED-FLAG):
-// ✅ Если браузер помечен флагом admin_preferred=1 в localStorage,
-//    любой клик по "Личный кабинет"/"Админка" ведёт в /admin/, даже если текущая Django-сессия гость.
+// ВАЖНО по ТЗ (февраль 2026):
+//   • Вход/регистрация ВЫНЕСЕНЫ только в иконку аккаунта в шапке.
+//   • В бургер-меню НЕТ блока входа/регистрации, там только категории.
+//   • В боковом меню:
+//       - сначала показывается до 10 категорий,
+//       - если категорий больше, снизу появляется "Показать ещё" со стрелкой,
+//       - при каждом клике добавляется ещё по 10 категорий вниз (N = SIDE_CATS_STEP),
+//       - список идёт ровным столбиком вниз.
 
-import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+} from "react";
 import { useNavigate } from "react-router-dom";
+
 import {
   whoami,
   setToken,
@@ -69,6 +34,7 @@ import {
   fetchCategories,
   isAdminPreferred,
   setAdminPreferred,
+    adminSessionLogin, // <‑‑ добавить
 } from "../Api";
 
 import {
@@ -78,29 +44,37 @@ import {
   FaChevronDown,
   FaNewspaper,
   FaLightbulb,
+  FaUser,
 } from "react-icons/fa";
+import { FaRegStar } from "react-icons/fa"; // иконка для Гороскопа
 
 import SuggestNewsModal from "./SuggestNewsModal";
 import WeatherWidget from "./WeatherWidget";
 import CurrencyWidget from "./CurrencyWidget";
 import SmartTicker from "./SmartTicker";
 import SearchAutocomplete from "./search/SearchAutocomplete";
+
+
 import "./Navbar.css";
 
+// Фолбэк-картинка для категорий (когда нет своей обложки)
 const CAT_FALLBACK =
   "data:image/svg+xml;utf8," +
   encodeURIComponent(
     '<svg xmlns="http://www.w3.org/2000/svg" width="280" height="160"><rect width="100%" height="100%" fill="#0a0f1a"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#5a6b84" font-family="Arial" font-size="14">Категория</text></svg>'
   );
 
-
-// ✅ Виртуальная категория: показываем в шапке даже если бэк НЕ отдаёт её в /api/categories/
+// Виртуальная категория "Авторские материалы" — всегда присутствует в списке
+// даже если её нет в ответе API.
 const STATIC_AUTHOR_CATEGORY = {
   slug: "avtorskie-materialy",
   name: "Авторские материалы",
   __static: true,
 };
 
+
+
+// Вспомогательная проверка: похожа ли строка на slug (латиница/цифры/дефис)
 function looksLikeSlug(text) {
   const s = String(text || "").trim();
   if (!s) return false;
@@ -108,9 +82,8 @@ function looksLikeSlug(text) {
   return /^[a-z0-9-]+$/i.test(s);
 }
 
+// Нормализуем имя "Авторские материалы", если в API прилетел slug-подобный мусор
 function normalizeCategoryNameForUI(cat) {
-  // ✅ Принудительно русифицируем имя категории авторских материалов
-  // даже если в БД оно английское (Avtorskie Materialy)
   if (!cat || typeof cat !== "object") return cat;
 
   const slug = String(cat.slug || "").trim();
@@ -121,13 +94,11 @@ function normalizeCategoryNameForUI(cat) {
     return { ...cat, name: "Авторские материалы" };
   }
 
-  // если name уже русский — оставляем
   return cat;
 }
 
+// Фолбэк-загрузка категорий напрямую через fetch, если fetchCategories() упал
 async function fetchCategoriesFallbackViaApi(signal) {
-  // ✅ Реальный endpoint у тебя на локалке: /api/categories/
-  // Возвращает {count,next,previous,results:[...]}
   const tryUrls = [
     "/api/categories/?page_size=200",
     "/api/categories/?page_size=500",
@@ -143,12 +114,12 @@ async function fetchCategoriesFallbackViaApi(signal) {
       const cats = Array.isArray(raw)
         ? raw
         : Array.isArray(raw?.results)
-          ? raw.results
-          : [];
+        ? raw.results
+        : [];
 
       if (cats.length) return cats;
     } catch {
-      // ignore and try next
+      // игнорируем и идём к следующему URL
     }
   }
 
@@ -156,16 +127,18 @@ async function fetchCategoriesFallbackViaApi(signal) {
 }
 
 /** =========================
- *  Anti-429 helpers (counts)
+ *  КЭШ и защита от 429 для счётчиков категорий
  *  ========================= */
+
 const COUNTS_CACHE_KEY = "izotovlife_category_counts_v1";
 const COUNTS_CACHE_TTL_MS = 6 * 60 * 60 * 1000; // 6 часов
-const COUNTS_MAX_FETCH_PER_BOOT = 12; // не больше 12 догрузок counts за один запуск страницы
-const COUNTS_POOL_LIMIT = 2; // меньше параллельности
-const COUNTS_REQUEST_DELAY_MS = 120; // микропаузa между запросами (смягчает rate limit)
+const COUNTS_MAX_FETCH_PER_BOOT = 12; // максимум запросов за "сессию загрузки"
+const COUNTS_POOL_LIMIT = 2; // параллельных запросов
+const COUNTS_REQUEST_DELAY_MS = 120; // задержка между запросами
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+// Чтение кэша счётчиков категорий из localStorage
 function readCountsCache() {
   try {
     const raw = localStorage.getItem(COUNTS_CACHE_KEY);
@@ -182,6 +155,7 @@ function readCountsCache() {
   }
 }
 
+// Запись кэша счётчиков категорий
 function writeCountsCache(nextMap) {
   try {
     localStorage.setItem(
@@ -189,10 +163,11 @@ function writeCountsCache(nextMap) {
       JSON.stringify({ ts: Date.now(), data: nextMap || {} })
     );
   } catch {
-    // ignore
+    // игнорируем ошибки localStorage
   }
 }
 
+// Берём ссылку на картинку из разных возможных полей объекта новости/категории
 const pickImageUrl = (obj) => {
   if (!obj || typeof obj !== "object") return null;
 
@@ -217,14 +192,17 @@ const pickImageUrl = (obj) => {
     if (typeof val === "string" && val.trim().length > 0) return val.trim();
 
     if (val && typeof val === "object") {
-      if (typeof val.url === "string" && val.url.trim().length > 0) return val.url.trim();
-      if (typeof val.src === "string" && val.src.trim().length > 0) return val.src.trim();
+      if (typeof val.url === "string" && val.url.trim().length > 0)
+        return val.url.trim();
+      if (typeof val.src === "string" && val.src.trim().length > 0)
+        return val.src.trim();
     }
   }
 
   return null;
 };
 
+// Универсальный извлекатель массива новостей из разных форматов ответа API
 const extractNewsItems = (data) => {
   if (!data) return [];
   if (Array.isArray(data)) return data;
@@ -244,6 +222,7 @@ const extractNewsItems = (data) => {
   return [];
 };
 
+// Нормализация URL-картинки: переводим http -> https
 const normalizeImgUrl = (url) => {
   if (!url) return url;
   const s = String(url).trim();
@@ -252,13 +231,7 @@ const normalizeImgUrl = (url) => {
   return s;
 };
 
-const getCategoryImageUrl = (cat, thumbsMap) => {
-  if (!cat) return CAT_FALLBACK;
-  if (thumbsMap && thumbsMap[cat.slug]) return thumbsMap[cat.slug];
-  const url = pickImageUrl(cat);
-  return normalizeImgUrl(url) || CAT_FALLBACK;
-};
-
+// Извлекаем счётчик новостей прямо из объекта категории (если есть)
 const getInlineCountFromCategory = (cat) => {
   const candidates = [
     cat?.news_count,
@@ -269,20 +242,25 @@ const getInlineCountFromCategory = (cat) => {
   ];
   for (const v of candidates) {
     if (typeof v === "number" && Number.isFinite(v)) return v;
-    if (typeof v === "string" && v.trim() !== "" && !Number.isNaN(Number(v))) return Number(v);
+    if (typeof v === "string" && v.trim() !== "" && !Number.isNaN(Number(v)))
+      return Number(v);
   }
   return null;
 };
 
+// Точный запрос для получения счётчика по категории (первая страница, page_size=1)
 async function fetchCategoryCount(slug, signal) {
-  const url = `/api/news/category/${encodeURIComponent(slug)}/?page=1&page_size=1`;
+  const url = `/api/news/category/${encodeURIComponent(
+    slug
+  )}/?page=1&page_size=1`;
   const resp = await fetch(url, { credentials: "same-origin", signal });
 
   if (resp.status === 429) return "THROTTLED";
   if (!resp.ok) return null;
 
   const raw = await resp.json();
-  if (typeof raw?.count === "number" && Number.isFinite(raw.count)) return raw.count;
+  if (typeof raw?.count === "number" && Number.isFinite(raw.count))
+    return raw.count;
 
   const items = extractNewsItems(raw);
   if (Array.isArray(items)) return items.length;
@@ -290,6 +268,7 @@ async function fetchCategoryCount(slug, signal) {
   return null;
 }
 
+// Примитивный пулл запросов (ограничиваем число параллельных worker'ов)
 async function runPool(items, limit, worker) {
   const results = new Array(items.length);
   let idx = 0;
@@ -311,46 +290,65 @@ async function runPool(items, limit, worker) {
 }
 
 export default function Navbar() {
+  // Открыто ли боковое меню
   const [menuOpen, setMenuOpen] = useState(false);
-  const [user, setUser] = useState(null);
-  const [openSuggest, setOpenSuggest] = useState(false);
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [showSearch, setShowSearch] = useState(false);
 
+  // Текущий пользователь (whoami)
+  const [user, setUser] = useState(null);
+  const isAuth = !!user; // true, если whoami вернул пользователя
+
+
+  // Модалка "Предложить новость"
+  const [openSuggest, setOpenSuggest] = useState(false);
+
+  // Состояния для поповеров
+  const [showDropdown, setShowDropdown] = useState(false); // старое "Ещё" по категориям (верх) — сейчас не используется
+  const [showSearch, setShowSearch] = useState(false); // открыт ли поповер поиска
+  const [showAccountMenu, setShowAccountMenu] = useState(false); // открыт ли поповер аккаунта
+
+  // Категории, превью, счётчики
   const [categories, setCategories] = useState([]);
   const [categoryThumbs, setCategoryThumbs] = useState({});
   const [categoryCounts, setCategoryCounts] = useState({});
 
+  // Флаг "мобильного" режима для блока категорий (ширина <= 900px)
   const [isMobileCats, setIsMobileCats] = useState(() => {
     if (typeof window === "undefined") return false;
     return window.matchMedia?.("(max-width: 900px)").matches ?? false;
   });
   const [mobileVisibleCount, setMobileVisibleCount] = useState(4);
 
+  // Флаг "шапка сжата" при скролле
   const [isCollapsed, setIsCollapsed] = useState(false);
 
-  // ✅ FIX 2026-01-11: определяем, "бежит" ли тикер (overflow) на маленьких экранах
+  // Тикер курсы+погода: есть ли переполнение по ширине
   const [tickerOverflow, setTickerOverflow] = useState(false);
 
-  const navigate = useNavigate();
-  const popoverRef = useRef(null);
+  // Для бокового меню: сколько категорий показываем сейчас (старт — 10)
+  const SIDE_CATS_STEP = 10;
+  const [sideCatsVisibleCount, setSideCatsVisibleCount] =
+    useState(SIDE_CATS_STEP);
 
-  const catsRowRef = useRef(null);
+  const navigate = useNavigate();
+
+  // Реfs для кликов снаружи / измерений
+  const popoverRef = useRef(null); // поповер поиска
+  const accountRef = useRef(null); // поповер аккаунта
+
+  const catsRowRef = useRef(null); // для старой логики категорий в шапке
   const catsMeasureRef = useRef(null);
   const moreMeasureRef = useRef(null);
 
-  const navbarRef = useRef(null);
+  const navbarRef = useRef(null); // корневой header
 
-  // ✅ refs для измерения overflow тикера
-  const tickerViewportRef = useRef(null);
-  const tickerInnerRef = useRef(null);
+  const tickerViewportRef = useRef(null); // контейнер тикера
+  const tickerInnerRef = useRef(null); // контент тикера
 
-  // ✅ FIX 2026-02-15-AUTHOR-ROUTE: единый роут для категорий (особенно для авторских)
+  // Функция формирует URL категории с учётом "Авторских материалов"
   const getCategoryPath = useCallback((cat) => {
     const slug = String(cat?.slug || "").trim();
     const name = String(cat?.name || "").trim().toLowerCase();
 
-    // Жёстко фиксируем URL авторской категории, чтобы не улетать на / или /articles
     if (slug === "avtorskie-materialy") return "/avtorskie-materialy/";
     if (name === "авторские материалы") return "/avtorskie-materialy/";
 
@@ -358,17 +356,23 @@ export default function Navbar() {
     return `/${slug}/`;
   }, []);
 
+  // При монтировании добавляем класс на body, чтобы можно было смещать контент вниз
   useEffect(() => {
     document.body.classList.add("has-navbar");
     return () => document.body.classList.remove("has-navbar");
   }, []);
 
-  // FIX (2026-02-15-LIGHT-ONLY): фиксируем только светлую тему и убираем любые хвосты тем
+  // Принудительно включаем светлую тему для шапки (white/light)
   useEffect(() => {
     const body = document.body;
     const html = document.documentElement;
 
-    const ALL_THEME_CLASSES = ["theme-graphite", "theme-white", "theme-light", "theme-dark"];
+    const ALL_THEME_CLASSES = [
+      "theme-graphite",
+      "theme-white",
+      "theme-light",
+      "theme-dark",
+    ];
     body.classList.remove(...ALL_THEME_CLASSES);
     html.classList.remove(...ALL_THEME_CLASSES);
 
@@ -381,6 +385,8 @@ export default function Navbar() {
     localStorage.setItem("theme", "white");
   }, []);
 
+  // Измеряем высоту шапки и сохраняем в CSS-переменную --navbar-offset,
+  // чтобы остальной контент мог корректно отступать сверху.
   useEffect(() => {
     const el = navbarRef.current;
     if (!el) return;
@@ -417,6 +423,7 @@ export default function Navbar() {
     };
   }, []);
 
+  // Отслеживаем медиазапрос (<=900px) для мобильного поведения категорий
   useEffect(() => {
     const onResize = () => {
       const v = window.matchMedia?.("(max-width: 900px)").matches ?? false;
@@ -427,7 +434,8 @@ export default function Navbar() {
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
-  // ✅ FIX 2026-01-11: измеряем, шире ли контент тикера, чем контейнер (overflow => "бежит")
+
+  // Тикер: измеряем ширину и решаем, есть ли переполнение
   useEffect(() => {
     const vp = tickerViewportRef.current;
     const inner = tickerInnerRef.current;
@@ -440,7 +448,7 @@ export default function Navbar() {
       try {
         const vpW = Math.ceil(vp.getBoundingClientRect().width || 0);
         const innerW = Math.ceil(inner.scrollWidth || 0);
-        const overflow = innerW > vpW + 2; // небольшой допуск
+        const overflow = innerW > vpW + 2;
         setTickerOverflow(overflow);
       } catch {
         // ignore
@@ -470,26 +478,25 @@ export default function Navbar() {
     };
   }, []);
 
+  // Загрузка категорий (с учётом фолбэка и "Авторских материалов")
   useEffect(() => {
     let cancelled = false;
     const controller = new AbortController();
 
     async function loadCategories() {
       try {
-        // 1) Пробуем как раньше (через общий Api.js)
         let cats = [];
         try {
           const resp = await fetchCategories();
           cats = Array.isArray(resp)
             ? resp
             : Array.isArray(resp?.results)
-              ? resp.results
-              : [];
+            ? resp.results
+            : [];
         } catch {
           cats = [];
         }
 
-        // 2) Если пусто — делаем fallback на реальный endpoint /api/categories/
         if (!cats || cats.length === 0) {
           const fallback = await fetchCategoriesFallbackViaApi(controller.signal);
           cats = fallback || [];
@@ -497,21 +504,22 @@ export default function Navbar() {
 
         if (cancelled) return;
 
-        // 3) Нормализуем UI-name для авторской категории, если она пришла англ.
+        // Нормализуем имена и добавляем "Авторские материалы", если ещё нет
         const normalized = (cats || []).map((c) => normalizeCategoryNameForUI(c));
-
-        // 4) Если author категории нет вообще — подмешиваем виртуальную
         const hasAuthor = normalized.some(
           (c) => String(c?.slug || "").trim() === "avtorskie-materialy"
         );
         const finalCats = hasAuthor ? normalized : [...normalized, STATIC_AUTHOR_CATEGORY];
 
         setCategories(finalCats);
+        // Сбрасываем количество видимых категорий в боковом меню
+        setSideCatsVisibleCount(SIDE_CATS_STEP);
       } catch (e) {
         console.error("Ошибка загрузки категорий:", e);
-
-        // даже при ошибке — покажем хотя бы авторскую категорию
-        if (!cancelled) setCategories([STATIC_AUTHOR_CATEGORY]);
+        if (!cancelled) {
+          setCategories([STATIC_AUTHOR_CATEGORY]);
+          setSideCatsVisibleCount(SIDE_CATS_STEP);
+        }
       }
     }
 
@@ -527,6 +535,7 @@ export default function Navbar() {
     };
   }, []);
 
+  // Догрузка счётчиков категорий с кэшем и лимитом запросов
   useEffect(() => {
     if (!categories || categories.length === 0) return;
 
@@ -538,9 +547,10 @@ export default function Navbar() {
       const updates = {};
       let cacheTouched = false;
 
+      // 1) сначала забираем inline-счётчики из объектов категорий
       for (const c of categories) {
         if (!c?.slug) continue;
-        if (c.__static) continue; // ✅ не грузим counts для виртуальной категории
+        if (c.__static) continue;
 
         const inline = getInlineCountFromCategory(c);
         if (inline !== null) {
@@ -552,9 +562,10 @@ export default function Navbar() {
         }
       }
 
+      // 2) добираем из кэша, если нет inline
       for (const c of categories) {
         if (!c?.slug) continue;
-        if (c.__static) continue; // ✅ не грузим counts для виртуальной категории
+        if (c.__static) continue;
         if (updates[c.slug] !== undefined) continue;
 
         const cached = cache[c.slug];
@@ -563,8 +574,9 @@ export default function Navbar() {
         }
       }
 
+      // 3) формируем список slug'ов, для которых нет ни inline, ни кэша
       const need = categories
-        .filter((c) => c?.slug && !c.__static) // ✅
+        .filter((c) => c?.slug && !c.__static)
         .map((c) => c.slug)
         .filter((slug) => updates[slug] === undefined);
 
@@ -573,17 +585,21 @@ export default function Navbar() {
       if (needLimited.length > 0) {
         let throttled = false;
 
-        const fetched = await runPool(needLimited, COUNTS_POOL_LIMIT, async (slug) => {
-          if (throttled) return null;
-          await sleep(COUNTS_REQUEST_DELAY_MS);
+        const fetched = await runPool(
+          needLimited,
+          COUNTS_POOL_LIMIT,
+          async (slug) => {
+            if (throttled) return null;
+            await sleep(COUNTS_REQUEST_DELAY_MS);
 
-          const cnt = await fetchCategoryCount(slug, controller.signal);
-          if (cnt === "THROTTLED") {
-            throttled = true;
-            return { slug, cnt: null, throttled: true };
+            const cnt = await fetchCategoryCount(slug, controller.signal);
+            if (cnt === "THROTTLED") {
+              throttled = true;
+              return { slug, cnt: null, throttled: true };
+            }
+            return { slug, cnt };
           }
-          return { slug, cnt };
-        });
+        );
 
         for (const row of fetched) {
           if (!row) continue;
@@ -621,6 +637,10 @@ export default function Navbar() {
     };
   }, [categories]);
 
+  // Сортировка категорий:
+  //   1) "Авторские материалы" всегда сверху
+  //   2) далее по убыванию счётчика новостей
+  //   3) при равенстве — по исходному порядку
   const sortedCategories = useMemo(() => {
     if (!categories || categories.length === 0) return [STATIC_AUTHOR_CATEGORY];
 
@@ -629,7 +649,6 @@ export default function Navbar() {
       const aSlug = String(a.c?.slug || "").trim();
       const bSlug = String(b.c?.slug || "").trim();
 
-      // ✅ Авторские материалы — всегда повыше (чтобы не "терялись" в Ещё)
       const aIsAuthor = aSlug === "avtorskie-materialy";
       const bIsAuthor = bSlug === "avtorskie-materialy";
       if (aIsAuthor && !bIsAuthor) return -1;
@@ -639,15 +658,15 @@ export default function Navbar() {
         a.c?.__static
           ? 0
           : aSlug && categoryCounts[aSlug] !== undefined
-            ? Number(categoryCounts[aSlug])
-            : getInlineCountFromCategory(a.c) ?? 0;
+          ? Number(categoryCounts[aSlug])
+          : getInlineCountFromCategory(a.c) ?? 0;
 
       const bCnt =
         b.c?.__static
           ? 0
           : bSlug && categoryCounts[bSlug] !== undefined
-            ? Number(categoryCounts[bSlug])
-            : getInlineCountFromCategory(b.c) ?? 0;
+          ? Number(categoryCounts[bSlug])
+          : getInlineCountFromCategory(b.c) ?? 0;
 
       if (bCnt !== aCnt) return bCnt - aCnt;
       return a.i - b.i;
@@ -656,6 +675,7 @@ export default function Navbar() {
     return indexed.map((x) => x.c);
   }, [categories, categoryCounts]);
 
+  // Старая логика расчёта количества категорий в шапке (если вернуть):
   const recomputeMobileVisibleCount = useCallback(() => {
     if (!isMobileCats) return;
 
@@ -719,6 +739,7 @@ export default function Navbar() {
     };
   }, [isMobileCats, sortedCategories, recomputeMobileVisibleCount]);
 
+  // Ниже используются, только если вернуть категории в шапку
   const DESKTOP_MAIN_COUNT = 8;
 
   const mainCategories = useMemo(() => {
@@ -731,6 +752,14 @@ export default function Navbar() {
     return sortedCategories.slice(DESKTOP_MAIN_COUNT, 80);
   }, [isMobileCats, sortedCategories, mobileVisibleCount]);
 
+  // Для бокового меню: видимые категории — первые sideCatsVisibleCount штук
+  const sideVisibleCategories = useMemo(
+    () => sortedCategories.slice(0, sideCatsVisibleCount),
+    [sortedCategories, sideCatsVisibleCount]
+  );
+  const hasMoreSideCats = sideCatsVisibleCount < sortedCategories.length;
+
+  // Загрузка текущего пользователя
   useEffect(() => {
     async function loadUser() {
       try {
@@ -743,59 +772,60 @@ export default function Navbar() {
     loadUser();
   }, []);
 
+  // Логаут
   const handleLogout = () => {
     setToken(null);
     setUser(null);
     navigate("/");
   };
 
-  // FIX 2026-02-16-ADMIN-CABINET + ADMIN-PREFERRED-FLAG:
-// - если браузер помечен как "режим админа" (admin_preferred=1),
-//   ВСЕГДА уводим в Django-admin (goToAdmin), даже если текущая Django-сессия уже гость.
-// - если флага нет, но user.is_superuser === true — тоже уводим в Django-admin.
-// - остальные роли (EDITOR, авторы) продолжают ходить в свои кабинеты.
-const handlePersonalCabinet = async () => {
-  // 1) Глобальный флаг "этот браузер — режим админа".
-  if (isAdminPreferred()) {
-    await goToAdmin();
+  // Переход в личный кабинет / админку с учётом admin_preferred
+  const handlePersonalCabinet = async () => {
+    if (isAdminPreferred()) {
+      await goToAdmin();
+      setMenuOpen(false);
+      return;
+    }
+
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+
+    if (user.is_superuser) {
+      setAdminPreferred(true);
+      await goToAdmin();
+      setMenuOpen(false);
+      return;
+    }
+
+    if (user.role === "EDITOR") {
+      navigate("/editor-dashboard");
+    } else {
+      navigate("/author-dashboard");
+    }
     setMenuOpen(false);
-    return;
-  }
+  };
 
-  // 2) Если пользователь не залогинен — отправляем на форму логина.
-  if (!user) {
-    navigate("/login");
-    return;
-  }
-
-  // 3) Суперпользователь по данным whoami.
-  if (user.is_superuser) {
-    // помечаем этот браузер как "режим админа" один раз,
-    // чтобы при следующих входах всегда ходить в Django-admin
-    setAdminPreferred(true);
-    await goToAdmin();
-    setMenuOpen(false);
-    return;
-  }
-
-  // 4) Обычные роли.
-  if (user.role === "EDITOR") {
-    navigate("/editor-dashboard");
-  } else {
-    navigate("/author-dashboard");
-  }
-  setMenuOpen(false);
-};
-
-
+  // Обработчики клика снаружи/ESC для закрытия поиска и аккаунт-меню
   useEffect(() => {
     const onDocClick = (e) => {
       if (showSearch && popoverRef.current && !popoverRef.current.contains(e.target)) {
         setShowSearch(false);
       }
+      if (
+        showAccountMenu &&
+        accountRef.current &&
+        !accountRef.current.contains(e.target)
+      ) {
+        setShowAccountMenu(false);
+      }
     };
     const onEsc = (e) => {
-      if (e.key === "Escape") setShowSearch(false);
+      if (e.key === "Escape") {
+        setShowSearch(false);
+        setShowAccountMenu(false);
+      }
     };
     document.addEventListener("mousedown", onDocClick);
     document.addEventListener("keydown", onEsc);
@@ -803,8 +833,9 @@ const handlePersonalCabinet = async () => {
       document.removeEventListener("mousedown", onDocClick);
       document.removeEventListener("keydown", onEsc);
     };
-  }, [showSearch]);
+  }, [showSearch, showAccountMenu]);
 
+  // Закрытие поиска при скролле/прокрутке
   useEffect(() => {
     if (!showSearch) return;
 
@@ -830,6 +861,7 @@ const handlePersonalCabinet = async () => {
     };
   }, [showSearch]);
 
+  // Сжатие шапки при скролле (isCollapsed)
   useEffect(() => {
     const COLLAPSE_AT = 120;
     const EXPAND_AT = 80;
@@ -839,9 +871,13 @@ const handlePersonalCabinet = async () => {
 
     const getScrollTop = () => {
       const w = window.scrollY || 0;
-      const de = document.documentElement ? document.documentElement.scrollTop || 0 : 0;
+      const de = document.documentElement
+        ? document.documentElement.scrollTop || 0
+        : 0;
       const db = document.body ? document.body.scrollTop || 0 : 0;
-      const se = document.scrollingElement ? document.scrollingElement.scrollTop || 0 : 0;
+      const se = document.scrollingElement
+        ? document.scrollingElement.scrollTop || 0
+        : 0;
       const root = document.getElementById("root");
       const rs = root ? root.scrollTop || 0 : 0;
       return Math.max(w, de, db, se, rs);
@@ -881,17 +917,19 @@ const handlePersonalCabinet = async () => {
     };
   }, []);
 
+  // Технический флаг, если когда-нибудь вернём оверлей с "Ещё" по категориям
   useEffect(() => {
     if (showDropdown) document.body.classList.add("navbar-categories-open");
     else document.body.classList.remove("navbar-categories-open");
     return () => document.body.classList.remove("navbar-categories-open");
   }, [showDropdown]);
 
+  // Ленивая догрузка превью-картинок для extraCategories (если вернём "Ещё" в шапке)
   useEffect(() => {
     if (!showDropdown || extraCategories.length === 0) return;
 
     const slugsToLoad = extraCategories
-      .filter((c) => !c?.__static) // ✅ не грузим обложки для виртуальной категории
+      .filter((c) => !c?.__static)
       .map((c) => c.slug)
       .filter(Boolean)
       .filter((slug) => !categoryThumbs[slug]);
@@ -929,6 +967,7 @@ const handlePersonalCabinet = async () => {
           const items = extractNewsItems(raw);
           if (!items.length) continue;
 
+          // Фильтруем реальные картинки, отличные от дефолтной
           const withRealImage = items.filter((n) => {
             const url = pickImageUrl(n);
             if (!url) return false;
@@ -938,22 +977,28 @@ const handlePersonalCabinet = async () => {
 
           if (!withRealImage.length) continue;
 
-          const withViews = withRealImage.filter((item) => typeof item.views === "number");
+          const withViews = withRealImage.filter(
+            (item) => typeof item.views === "number"
+          );
 
           let chosen = null;
 
+          // Если есть просмотры — берём новость с максимальными views
           if (withViews.length && withViews.some((item) => (item.views || 0) > 0)) {
             chosen = withViews.reduce((maxItem, item) =>
               (item.views || 0) > (maxItem.views || 0) ? item : maxItem
             );
           } else {
-            chosen = withRealImage[Math.floor(Math.random() * withRealImage.length)];
+            // иначе берём случайную
+            chosen =
+              withRealImage[Math.floor(Math.random() * withRealImage.length)];
           }
 
           const url = pickImageUrl(chosen);
           if (url) updates[slug] = normalizeImgUrl(url);
         } catch (e) {
-          if (!cancelled) console.error("Ошибка загрузки обложки категории", slug, e);
+          if (!cancelled)
+            console.error("Ошибка загрузки обложки категории", slug, e);
         }
       }
 
@@ -974,16 +1019,20 @@ const handlePersonalCabinet = async () => {
   }, [showDropdown, extraCategories, categoryThumbs]);
 
   return (
-    <header ref={navbarRef} className={`navbar ${isCollapsed ? "navbar--collapsed" : ""}`}>
-      {/* ---------- ВЕРХ ---------- */}
+    <header
+      ref={navbarRef}
+      className={`navbar ${isCollapsed ? "navbar--collapsed" : ""}`}
+    >
+      {/* ====== ВЕРХНЯЯ ПАНЕЛЬ ШАПКИ ====== */}
       <div className="navbar-top">
-        {/* ЛОГОТИП */}
+        {/* Логотип: кликабельный, ведёт на главную */}
         <span
           className="navbar-logo"
           onClick={() => navigate("/")}
           title="На главную IzotovLife"
           style={{ cursor: "pointer" }}
         >
+          {/* Вариант с текстом IzotovLife */}
           <span
             className="logo-svg logo-svg--full"
             style={{
@@ -1004,12 +1053,13 @@ const handlePersonalCabinet = async () => {
             </span>
           </span>
 
+          {/* Компактный иконка-логотип для очень узких экранов */}
           <span className="logo-svg logo-svg--icon" aria-hidden="true">
             <FaNewspaper style={{ width: 26, height: 26 }} />
           </span>
         </span>
 
-        {/* Центр: курсы валют + погода */}
+        {/* Центр: бегущая строка — курсы + погода, реагирует на overflow */}
         <div className="navbar-center" ref={tickerViewportRef}>
           <SmartTicker
             className="navbar-center-ticker"
@@ -1038,9 +1088,7 @@ const handlePersonalCabinet = async () => {
                 <WeatherWidget />
               </div>
 
-              {/* ✅ Разделитель "|" ТОЛЬКО:
-                  - на маленьких экранах (isMobileCats)
-                  - и ТОЛЬКО когда тикер реально "бежит" (overflow) */}
+              {/* В мобильном режиме добавляем разделитель, если есть переполнение */}
               {isMobileCats && tickerOverflow && (
                 <span
                   className="ticker-end-sep"
@@ -1061,238 +1109,223 @@ const handlePersonalCabinet = async () => {
           </SmartTicker>
         </div>
 
-        {/* Правый блок */}
-        <div className="navbar-right">
-          {/* Поиск */}
-          <div className="search-anchor" ref={popoverRef}>
+        {/* Правый блок: поиск, предложить новость, гороскоп, аккаунт, бургер */}
+<div className="navbar-right">
+  {/* Поиск — иконка + поповер с автодополнением */}
+  <div className="search-anchor" ref={popoverRef}>
+    <button
+      className="icon-btn"
+      title="Поиск по сайту"
+      onClick={() => setShowSearch((v) => !v)}
+    >
+      <FaSearch />
+    </button>
+
+    {showSearch && (
+      <div className="search-popover open">
+        <button
+          className="close-search"
+          onClick={() => setShowSearch(false)}
+          aria-label="Закрыть поиск"
+        >
+          <FaTimes />
+        </button>
+        <SearchAutocomplete />
+      </div>
+    )}
+  </div>
+  {/* дальше — "Предложить", "Гороскоп", аккаунт, бургер */}
+
+
+{/* Кнопка "Предложить новость" — только иконка лампочки */}
+<button
+  className="suggest-link suggest-link-btn"
+  type="button"
+  onClick={() => setOpenSuggest(true)}
+  title="Предложить новость"
+>
+  <FaLightbulb className="suggest-link__icon" />
+</button>
+
+
+       {/* Кнопка "Гороскоп"
+    Назначение:
+    – переход на страницу /horoscope
+    – всегда показывает только тематическую иконку (без текста)
+*/}
+<button
+  className="horoscope-link horoscope-link-btn"
+  onClick={() => navigate("/horoscope")}
+  title="Гороскоп"
+>
+  {/* Тематическая иконка из react-icons вместо эмодзи 🔮 */}
+  <FaRegStar className="horoscope-link__icon horoscope-link__icon--horoscope" />
+</button>
+
+
+
+
+
+          {/* Иконка аккаунта — ЕДИНСТВЕННОЕ место входа/регистрации по ТЗ */}
+          <div className="account-anchor" ref={accountRef}>
             <button
               className="icon-btn"
-              title="Поиск по сайту"
-              onClick={() => setShowSearch((v) => !v)}
+              title={user ? "Аккаунт" : "Вход / регистрация"}
+              onClick={() => setShowAccountMenu((v) => !v)}
             >
-              <FaSearch />
+              <FaUser />
             </button>
 
-            {showSearch && (
-              <div className="search-popover open">
-                <button
-                  className="close-search"
-                  onClick={() => setShowSearch(false)}
-                  aria-label="Закрыть поиск"
-                >
-                  <FaTimes />
-                </button>
-                <SearchAutocomplete />
+            {showAccountMenu && (
+              <div className="account-popover">
+                {/* Гость: Войти / Регистрация */}
+                {!user ? (
+                  <>
+                    <button
+                      type="button"
+                      className="account-popover-item"
+                      onClick={() => {
+                        setShowAccountMenu(false);
+                        navigate("/login");
+                      }}
+                    >
+                      Войти
+                    </button>
+                    <button
+                      type="button"
+                      className="account-popover-item"
+                      onClick={() => {
+                        setShowAccountMenu(false);
+                        navigate("/register");
+                      }}
+                    >
+                      Регистрация
+                    </button>
+                  </>
+                ) : (
+                  // Авторизован: ЛК / Админка / Выход
+                  <>
+                    {!user.is_superuser && (
+                      <button
+                        type="button"
+                        className="account-popover-item"
+                        onClick={() => {
+                          setShowAccountMenu(false);
+                          handlePersonalCabinet();
+                        }}
+                      >
+                        Личный кабинет
+                      </button>
+                    )}
+                    {user.is_superuser && (
+                      <button
+                        type="button"
+                        className="account-popover-item"
+                        onClick={async () => {
+                          setShowAccountMenu(false);
+                          setAdminPreferred(true);
+                          await handlePersonalCabinet();
+                        }}
+                      >
+                        Админка
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      className="account-popover-item"
+                      onClick={() => {
+                        setShowAccountMenu(false);
+                        handleLogout();
+                      }}
+                    >
+                      Выйти
+                    </button>
+                  </>
+                )}
               </div>
             )}
           </div>
 
-          {/* Предложить новость */}
+          {/* Бургер-меню справа: открывает боковую панель с категориями */}
           <button
-            className="suggest-link suggest-link-btn"
-            onClick={() => setOpenSuggest(true)}
-            title="Предложить новость"
+            className="icon-btn"
+            title="Меню"
+            onClick={() => setMenuOpen(true)}
           >
-            <span className="suggest-link__icon">
-              <FaLightbulb />
-            </span>
-            <span className="suggest-link__text">Предложить новость</span>
-          </button>
-
-          {/* Гороскоп */}
-          <button
-            className="horoscope-link horoscope-link-btn"
-            onClick={() => navigate("/horoscope")}
-            title="Гороскоп"
-          >
-            <span className="horoscope-link__icon">🔮</span>
-            <span className="horoscope-link__text">Гороскоп</span>
-          </button>
-
-          {/* Меню */}
-          <button className="icon-btn" title="Меню" onClick={() => setMenuOpen(true)}>
             <FaBars />
           </button>
         </div>
       </div>
 
-      {/* ---------- КАТЕГОРИИ ---------- */}
-      <nav className="navbar-categories">
-        <div className="categories-center" ref={catsRowRef}>
-          {mainCategories.map((cat) => (
-            <span
-              key={cat.slug}
-              className="cat-link"
-              onClick={(e) => {
-                // ✅ FIX 2026-02-15-AUTHOR-ROUTE: не даём ничему "съесть" клик
-                e.preventDefault?.();
-                e.stopPropagation?.();
-                navigate(getCategoryPath(cat));
-              }}
-              title={
-                typeof categoryCounts?.[cat.slug] === "number"
-                  ? `${cat.name} (${categoryCounts[cat.slug]})`
-                  : cat.name
-              }
-            >
-              {cat.name}
-            </span>
-          ))}
+      {/* Категории под шапкой (navbar-categories) по ТЗ скрыты — оставлено на будущее */}
 
-          {extraCategories.length > 0 && (
-            <div className="cat-dropdown">
-              <button
-                type="button"
-                className="cat-link dropdown-trigger"
-                onClick={() => setShowDropdown((prev) => !prev)}
-                aria-expanded={showDropdown ? "true" : "false"}
-              >
-                Ещё <FaChevronDown style={{ fontSize: "0.7em" }} />
-              </button>
-            </div>
-          )}
-
-          {/* скрытый измеритель для МОБИЛЫ */}
-          <div className="categories-measure" ref={catsMeasureRef} aria-hidden="true">
-            <span className="cat-link dropdown-trigger" ref={moreMeasureRef}>
-              Ещё <FaChevronDown style={{ fontSize: "0.7em" }} />
-            </span>
-            {sortedCategories.map((cat) => (
-              <span key={cat.slug} className="cat-link" data-measure-cat="1">
-                {cat.name}
-              </span>
-            ))}
-          </div>
-        </div>
-      </nav>
-
-      {/* ---------- ВЫПАДАЮЩИЙ СПИСОК "ЕЩЁ" ---------- */}
-      {showDropdown && extraCategories.length > 0 && (
-        <>
-          <div
-            className="navbar-more-overlay"
-            onClick={() => setShowDropdown(false)}
-          />
-          <div className="navbar-more-dropdown">
-            {extraCategories.map((cat) => {
-              const bg = getCategoryImageUrl(cat, categoryThumbs);
-              return (
-                <button
-                  key={cat.slug}
-                  type="button"
-                  className="navbar-more-item"
-                  onClick={() => {
-                    setShowDropdown(false);
-                    navigate(getCategoryPath(cat));
-                  }}
-                  style={{ backgroundImage: `url(${bg})` }}
-                  title={
-                    typeof categoryCounts?.[cat.slug] === "number"
-                      ? `${cat.name} (${categoryCounts[cat.slug]})`
-                      : cat.name
-                  }
-                >
-                  <span className="overlay">{cat.name}</span>
-                </button>
-              );
-            })}
-          </div>
-        </>
-      )}
-
-         {/* ---------- БОКОВОЕ МЕНЮ ---------- */}
+      {/* ====== БОКОВОЕ БУРГЕР-МЕНЮ C КАТЕГОРИЯМИ ====== */}
       {menuOpen && (
         <>
+          {/* Оверлей затемнения фона */}
           <div className="overlay" onClick={() => setMenuOpen(false)} />
+
+          {/* Панель справа */}
           <div className="side-menu">
+            {/* Кнопка закрытия меню */}
             <button className="close-btn" onClick={() => setMenuOpen(false)}>
               <FaTimes />
             </button>
 
-            {/* Пункт "Категории" убран: страница /categories остаётся,
-                но ссылка на неё будет, например, в футере, а не в бургер-меню. */}
-            {/*
-            <span
-              className="menu-item"
-              onClick={() => {
-                setMenuOpen(false);
-                navigate("/categories");
-              }}
-            >
-              Категории
-            </span>
-            */}
+            {/* Блок категорий: вертикальный список + "Показать ещё" */}
+            <div className="side-menu-section">
+              <div className="side-menu-section-title">Категории</div>
 
-            {!user && (
-              <>
-                <span
-                  className="menu-item"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    navigate("/login");
-                  }}
-                >
-                  Войти
-                </span>
-                <span
-                  className="menu-item"
-                  onClick={() => {
-                    setMenuOpen(false);
-                    navigate("/register");
-                  }}
-                >
-                  Регистрация
-                </span>
-              </>
-            )}
-
-            {user && (
-              <>
-                {/* FIX 2026-02-16-ADMIN-CABINET:
-                    - для суперпользователя и обычных пользователей используем единый обработчик handlePersonalCabinet */}
-                {!user.is_superuser && (
-                  <span
-                    className="menu-item"
+              <div className="side-menu-categories">
+                {/* Выводим первые sideCatsVisibleCount категорий в аккуратный столбик */}
+                {sideVisibleCategories.map((cat) => (
+                  <button
+                    key={cat.slug}
+                    type="button"
+                    className="side-menu-item side-menu-item--category"
                     onClick={() => {
                       setMenuOpen(false);
-                      handlePersonalCabinet();
+                      navigate(getCategoryPath(cat));
                     }}
+                    title={
+                      typeof categoryCounts?.[cat.slug] === "number"
+                        ? `${cat.name} (${categoryCounts[cat.slug]})`
+                        : cat.name
+                    }
                   >
-                    Личный кабинет
-                  </span>
-                )}
+                    {cat.name}
+                  </button>
+                ))}
 
-                {user.is_superuser && (
-                  <span
-                    className="menu-item"
-                    onClick={async () => {
-                      // включаем режим "этот браузер — админ"
-                      setAdminPreferred(true);
-                      await handlePersonalCabinet();
-                    }}
+                {/* Если категорий ещё осталось — показываем кнопку "Показать ещё" */}
+                {hasMoreSideCats && (
+                  <button
+                    type="button"
+                    className="side-menu-item side-menu-item--more"
+                    onClick={() =>
+                      setSideCatsVisibleCount((prev) =>
+                        Math.min(sortedCategories.length, prev + SIDE_CATS_STEP)
+                      )
+                    }
                   >
-                    Админка
-                  </span>
+                    Показать ещё{" "}
+                    <FaChevronDown
+                      style={{ fontSize: "0.7em", marginLeft: 6 }}
+                    />
+                  </button>
                 )}
+              </div>
+            </div>
 
-                <span
-                  className="menu-item"
-                  onClick={() => {
-                    handleLogout();
-                    setMenuOpen(false);
-                  }}
-                >
-                  Выйти
-                </span>
-              </>
-            )}
+            {/* По ТЗ: никакого блока входа/регистрации в боковом меню — всё через иконку аккаунта в шапке */}
           </div>
         </>
       )}
 
-      {openSuggest && (
-        <SuggestNewsModal onClose={() => setOpenSuggest(false)} />
-      )}
+      {/* Модалка "Предложить новость" */}
+      {openSuggest && <SuggestNewsModal onClose={() => setOpenSuggest(false)} />}
     </header>
   );
 }
+
+
